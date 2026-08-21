@@ -8,7 +8,7 @@ final class FakeRecognizer: SpeechRecognizing {
     enum Script {
         case succeeds(String)
         case fails(RecordingError)
-        case hangs                       // ne rend jamais la main
+        case hangs                       // never returns
     }
 
     var script: Script
@@ -23,7 +23,7 @@ final class FakeRecognizer: SpeechRecognizing {
     var recordingURL: URL?
     let meter = AudioLevelMeter()
 
-    // Journal d'appels, pour vérifier le cycle de vie.
+    // Call log, used to verify the lifecycle.
     private(set) var startCount = 0
     private(set) var stopCount = 0
     private(set) var cancelCount = 0

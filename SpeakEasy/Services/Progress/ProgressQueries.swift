@@ -18,7 +18,7 @@ enum ProgressQueries {
         ))) ?? 0
     }
 
-    /// Nombre de **tentatives** du jour, pas de phrases distinctes.
+    /// Count of **attempts** today, not distinct sentences.
     static func todayAttemptCount(in context: ModelContext) -> Int {
         let start = Calendar.current.startOfDay(for: .now)
         let descriptor = FetchDescriptor<DailyActivity>(
@@ -27,8 +27,8 @@ enum ProgressQueries {
         return (try? context.fetch(descriptor).first?.attemptCount) ?? 0
     }
 
-    /// Série de jours consécutifs. Aujourd'hui inclus ; si aujourd'hui n'est
-    /// pas encore pratiqué, la série repart d'hier.
+    /// Consecutive-day streak. Today is included; if today hasn't been
+    /// practiced yet, the streak restarts from yesterday.
     static func currentStreak(in context: ModelContext) -> Int {
         let days = ((try? context.fetch(FetchDescriptor<DailyActivity>())) ?? [])
             .map(\.day)

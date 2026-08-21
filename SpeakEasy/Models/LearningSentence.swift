@@ -6,11 +6,11 @@ struct LearningSentence: Identifiable, Codable, Sendable, Hashable {
     let french: String
     let english: String
     let difficulty: Int
-    /// Mots porteurs de sens : pondérés plus lourd dans le score.
+    /// Meaning-bearing words: weighted more heavily in the score.
     let keywords: [String]
-    /// Formulations alternatives acceptées (mode Translate).
+    /// Accepted alternative phrasings (Translate mode).
     let acceptedVariants: [String]
-    /// Phonèmes difficiles pour un francophone présents dans la phrase.
+    /// Phonemes that are hard for a French speaker, present in the sentence.
     let focusPhonemes: [String]
 
     enum CodingKeys: String, CodingKey {
@@ -31,7 +31,7 @@ struct LearningSentence: Identifiable, Codable, Sendable, Hashable {
         self.focusPhonemes = focusPhonemes
     }
 
-    // Rétrocompatibilité avec le JSON actuel (les nouveaux champs sont absents).
+    // Backward compatibility with the current JSON (the new fields are absent).
     init(from decoder: any Decoder) throws {
         let c = try decoder.container(keyedBy: CodingKeys.self)
         id = try c.decode(Int.self, forKey: .id)

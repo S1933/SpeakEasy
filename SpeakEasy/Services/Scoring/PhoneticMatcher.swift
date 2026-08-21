@@ -1,14 +1,14 @@
 import Foundation
 
-/// Détecte les quasi-homophones résultant des difficultés classiques
-/// d'un locuteur francophone en anglais.
+/// Detects near-homophones resulting from the typical difficulties of a
+/// French speaker in English.
 ///
-/// Ce n'est PAS un moteur phonétique général : c'est une heuristique ciblée
-/// sur un ensemble fermé de substitutions, ce qui la rend prévisible et testable.
+/// This is NOT a general-purpose phonetic engine: it is a heuristic targeted
+/// at a closed set of substitutions, which makes it predictable and testable.
 enum PhoneticMatcher {
 
-    /// Réécritures appliquées avant comparaison. Deux mots dont les formes
-    /// réduites coïncident sont considérés comme quasi-homophones.
+    /// Rewrites applied before comparison. Two words whose reduced forms
+    /// coincide are treated as near-homophones.
     private static let reductions: [(pattern: String, replacement: String)] = [
         ("th", "s"),        // think→sink, three→sree  (/θ/ → /s/)
         ("ph", "f"),
@@ -20,7 +20,7 @@ enum PhoneticMatcher {
         ("kn", "n"), ("wr", "r"), ("mb$", "m")
     ]
 
-    /// Consonnes fréquemment amuïes ou substituées.
+    /// Frequently devoiced or substituted consonants.
     private static let equivalents: [Character: Character] = [
         "z": "s", "v": "f", "b": "p", "d": "t", "g": "k", "j": "d"
     ]
@@ -32,29 +32,29 @@ enum PhoneticMatcher {
             s = s.replacingOccurrences(of: pattern, with: replacement,
                                        options: .regularExpression)
         }
-        // Le /h/ initial est systématiquement muet en français.
+        // Initial /h/ is systematically silent in French.
         if s.hasPrefix("h") { s.removeFirst() }
-        // Consonne finale muette : "walked" ≈ "walk"
+        // Silent final consonant: "walked" ≈ "walk"
         s = s.replacingOccurrences(of: "e$", with: "", options: .regularExpression)
-        // Dévoisement / assourdissement
+        // Voicing / devoicing
         s = String(s.map { equivalents[$0] ?? $0 })
-        // Doublons de consonnes
+        // Doubled consonants
         return s.reduce(into: "") { acc, ch in
             if acc.last != ch { acc.append(ch) }
         }
     }
 
-    /// Vrai si les deux mots sont probablement le même mot mal prononcé.
+    /// True if the two words are probably the same word mispronounced.
     static func isNearMiss(_ a: String, _ b: String) -> Bool {
         guard a != b else { return false }
         let ra = reduce(a), rb = reduce(b)
         if ra == rb { return true }
-        // Tolère une édition de caractère sur les formes réduites, pour les
-        // mots longs uniquement (sinon "cat"/"cut" deviendrait un near-miss).
+        // Tolerate a one-character edit on the reduced forms, for long
+        // words only (otherwise "cat"/"cut" would become a near-miss).
         return min(ra.count, rb.count) >= 4 && levenshtein(ra, rb) == 1
     }
 
-    /// Décrit l'erreur pour le feedback (S4.4).
+    /// Describes the error for feedback (S4.4).
     static func diagnose(expected: String, actual: String) -> PhonemeIssue? {
         let e = expected.lowercased(), a = actual.lowercased()
         if e.contains("th"), !a.contains("th") {

@@ -1,9 +1,9 @@
 import os
 import AVFoundation
 
-/// Les appels AVAudioSession sont bloquants : ils exigent une queue sérialisée
-/// dédiée (assertion interne AVAudioSession). On l'isole derrière un actor pour
-/// l'isolation concurrente et on `sync` dessus pour chaque appel.
+/// AVAudioSession calls are blocking: they require a dedicated serialized
+/// queue (internal AVAudioSession assertion). We isolate it behind an actor
+/// for concurrent isolation and `sync` on it for each call.
 actor AudioSessionController {
 
     private let queue = DispatchQueue(label: "com.speakeasy.audioSession", qos: .userInitiated)
@@ -13,10 +13,10 @@ actor AudioSessionController {
             let session = AVAudioSession.sharedInstance()
             try session.setCategory(
                 .playAndRecord,
-                mode: .spokenAudio,             // traitement d'entrée actif, sortie à volume normal
+                mode: .spokenAudio,             // input processing active, output at normal volume
                 options: [.duckOthers, .defaultToSpeaker, .allowBluetoothHFP]
             )
-            // Buffer court = latence perçue plus faible sur le VU-mètre.
+            // Short buffer = lower perceived latency on the VU meter.
             try? session.setPreferredIOBufferDuration(0.02)
             try session.setActive(true)
             Log.audio.debug("Session active, route: \(session.currentRoute.inputs.first?.portName ?? "?", privacy: .public)")
@@ -29,7 +29,7 @@ actor AudioSessionController {
                 try AVAudioSession.sharedInstance().setActive(false, options: .notifyOthersOnDeactivation)
             }
         } catch {
-            Log.audio.error("Désactivation: \(error, privacy: .public)")
+            Log.audio.error("Deactivation: \(error, privacy: .public)")
         }
     }
 }

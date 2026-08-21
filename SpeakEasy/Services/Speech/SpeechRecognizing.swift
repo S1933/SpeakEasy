@@ -1,8 +1,8 @@
 import Foundation
 import Observation
 
-/// Frontière d'abstraction de SpeechRecognitionService : rend le
-/// `PracticeViewModel` testable (doubles scriptables en S3.3).
+/// Abstraction boundary for SpeechRecognitionService: makes the
+/// `PracticeViewModel` testable (scriptable doubles in S3.3).
 @MainActor
 protocol SpeechRecognizing: AnyObject, Observable {
     var status: SpeechRecognitionService.Status { get }

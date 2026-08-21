@@ -1,6 +1,6 @@
 import SwiftUI
 
-/// Bandeau non bloquant en haut de l'écran (S3.1).
+/// Non-blocking banner at the top of the screen (S3.1).
 struct InlineBanner: View {
     let icon: String
     let text: String

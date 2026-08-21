@@ -1,18 +1,18 @@
 import Testing
 @testable import SpeakEasy
 
-@Suite("Scoring avancé (S4.2/S4.3)")
+@Suite("Advanced scoring (S4.2/S4.3)")
 struct SentenceScoringExtendedTests {
     private let service = SentenceScoringService()
 
-    @Test("Une variante acceptée score 100")
+    @Test("An accepted variant scores 100")
     func acceptedVariant() {
         let s = sentence("It looks fine to me.", variants: ["It seems fine to me."])
         #expect(service.score(sentence: s, transcript: "it seems fine to me",
                               mode: .translate).score == 100)
     }
 
-    @Test("Omettre un article coûte moins qu'omettre un mot-clé")
+    @Test("Dropping an article costs less than dropping a keyword")
     func weightedTokens() {
         let s = sentence("I think it's the best solution.", keywords: ["best", "solution"])
         let article = service.score(sentence: s,
@@ -24,14 +24,14 @@ struct SentenceScoringExtendedTests {
         #expect(article.score > keyword.score)
     }
 
-    @Test("Les contractions sont équivalentes à leur forme développée",
+    @Test("Contractions are equivalent to their expanded form",
           arguments: [("it's fine", "it is fine"), ("i'm not sure", "i am not sure")])
     func contractions(pair: (String, String)) {
         #expect(service.score(expected: pair.0, transcript: pair.1).score == 100)
         #expect(service.score(expected: pair.1, transcript: pair.0).score == 100)
     }
 
-    @Test("Near-miss : cas de référence",
+    @Test("Near-miss: reference cases",
           arguments: [
             ("think", "sink", true), ("think", "fink", true),
             ("sheep", "ship", true), ("house", "ouse", true),

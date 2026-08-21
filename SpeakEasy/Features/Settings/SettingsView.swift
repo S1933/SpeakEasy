@@ -89,9 +89,9 @@ struct SettingsView: View {
                 let changed = settings.voiceLocale != newValue.rawValue
                 settings.voiceLocale = newValue.rawValue
                 try? modelContext.save()
-                // Synchronisation immédiate du playback (source unique : voiceLocale).
+                // Immediate playback synchronization (single source: voiceLocale).
                 playback.localeIdentifier = newValue.rawValue
-                // S3.5 : un changement de locale relance l'onboarding (assets).
+                // S3.5: a locale change restarts onboarding (assets).
                 if changed { hasCompletedOnboarding = false }
             }
         )

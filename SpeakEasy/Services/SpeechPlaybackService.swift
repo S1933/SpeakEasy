@@ -9,7 +9,7 @@ final class SpeechPlaybackService: NSObject {
 
     var isSpeaking = false
     var localeIdentifier: String = "en-US"
-    /// 0,5 = très lent (mode « écoute attentive »), 1,0 = débit naturel.
+    /// 0.5 = very slow ("careful listening" mode), 1.0 = natural pace.
     var rateMultiplier: Double = 1.0
 
     override init() {
@@ -38,8 +38,8 @@ final class SpeechPlaybackService: NSObject {
         isSpeaking = false
     }
 
-    /// Privilégie une voix premium/enhanced si l'utilisateur l'a téléchargée,
-    /// sinon retombe sur la voix compacte, puis sur n'importe quel anglais.
+    /// Prefers a premium/enhanced voice if the user has downloaded it,
+    /// otherwise falls back to the compact voice, then to any English.
     private static func bestVoice(for identifier: String) -> AVSpeechSynthesisVoice? {
         let candidates = AVSpeechSynthesisVoice.speechVoices()
             .filter { $0.language == identifier }

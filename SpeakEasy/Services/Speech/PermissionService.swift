@@ -7,8 +7,8 @@ enum PermissionService {
         AVAudioApplication.shared.recordPermission
     }
 
-    /// Le callback de TCC arrive sur une queue background (pas main).
-    /// On isole la fonction pour que la closure passée à l'API soit nonisolated.
+    /// The TCC callback is delivered on a background queue (not main).
+    /// We isolate the function so the closure passed to the API is nonisolated.
     nonisolated static func requestMicrophone() async -> Bool {
         await withCheckedContinuation { continuation in
             AVAudioApplication.requestRecordPermission { granted in

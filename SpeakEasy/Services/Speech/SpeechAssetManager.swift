@@ -11,7 +11,7 @@ final class SpeechAssetManager {
         case installed
         case downloading(progress: Double)
         case failed(String)
-        case unsupported            // locale non prise en charge par l'appareil
+        case unsupported            // locale not supported by the device
     }
 
     private(set) var state: State = .unknown
@@ -30,7 +30,7 @@ final class SpeechAssetManager {
             : .unknown
     }
 
-    /// Télécharge en exposant une progression réelle.
+    /// Downloads while exposing real progress.
     func install(locale: Locale) async {
         let transcriber = SpeechTranscriber(locale: locale, preset: .progressiveTranscription)
         do {
@@ -48,14 +48,14 @@ final class SpeechAssetManager {
             try await request.downloadAndInstall()
             progressObservation = nil
 
-            // Empêche le système de récupérer l'espace en supprimant les assets.
+            // Prevent the system from reclaiming space by deleting the assets.
             try? await AssetInventory.reserve(locale: locale)
 
             state = .installed
-            Log.speech.notice("Assets installés pour \(locale.identifier, privacy: .public)")
+            Log.speech.notice("Assets installed for \(locale.identifier, privacy: .public)")
         } catch {
             progressObservation = nil
-            Log.speech.error("Installation assets: \(error, privacy: .public)")
+            Log.speech.error("Asset installation: \(error, privacy: .public)")
             state = .failed(error.localizedDescription)
         }
     }

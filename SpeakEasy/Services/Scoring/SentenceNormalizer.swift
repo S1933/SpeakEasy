@@ -2,33 +2,33 @@ import Foundation
 
 enum SentenceNormalizer {
 
-    /// Toutes les variantes Unicode d'apostrophe → U+0027.
+    /// All Unicode apostrophe variants → U+0027.
     private static let apostropheVariants: [Character] = [
         "\u{2019}", // ’ right single quote
         "\u{2018}", // ‘ left single quote
         "\u{02BC}", // ʼ modifier letter apostrophe
         "\u{FF07}", // ＇ fullwidth
-        "\u{00B4}"  // ´ acute accent (fréquent en saisie FR)
+        "\u{00B4}"  // ´ acute accent (common in FR input)
     ]
 
-    /// Ponctuation rognée aux extrémités de CHAQUE token.
+    /// Punctuation trimmed at the ends of EACH token.
     private static let punctuation = CharacterSet(
         charactersIn: ".?!,;:\"“”«»()[]{}—–-…"
     )
 
-    /// Mots parasites que l'ASR remonte parfois et qu'on ne doit pas pénaliser.
+    /// Filler words that ASR sometimes surfaces and that we must not penalize.
     private static let fillers: Set<String> = [
         "um", "uh", "erm", "er", "ah", "hmm", "mm", "eh"
     ]
 
     // MARK: - API
 
-    /// Forme canonique d'une phrase, pour comparaison ou affichage debug.
+    /// Canonical form of a sentence, for comparison or debug display.
     static func normalize(_ text: String) -> String {
         tokenize(text).joined(separator: " ")
     }
 
-    /// Tokens normalisés, prêts pour l'alignement.
+    /// Normalized tokens, ready for alignment.
     static func tokenize(_ text: String, dropFillers: Bool = true) -> [String] {
         var s = text.lowercased()
         for variant in apostropheVariants {
@@ -43,9 +43,9 @@ enum SentenceNormalizer {
         return dropFillers ? tokens.filter { !fillers.contains($0) } : tokens
     }
 
-    /// Tokens d'affichage : casse et ponctuation d'origine préservées,
-    /// mais **même cardinalité et même ordre** que `tokenize(_:)`.
-    /// Indispensable pour que `buildTokenResults` indexe correctement.
+    /// Display tokens: original case and punctuation preserved,
+    /// but **same cardinality and same order** as `tokenize(_:)`.
+    /// Essential so `buildTokenResults` indexes correctly.
     static func displayTokens(_ text: String) -> [String] {
         var kept: [String] = []
         for raw in text.split(whereSeparator: \.isWhitespace) {

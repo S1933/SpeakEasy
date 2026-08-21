@@ -1,9 +1,9 @@
 import Foundation
 
-/// Gestion des contractions dans l'alignement (S4.2) :
-/// `it's` (1 token) ≡ `it is` (2 tokens) — une transition plusieurs-vers-un.
+/// Handling of contractions in alignment (S4.2):
+/// `it's` (1 token) ≡ `it is` (2 tokens) — a many-to-one transition.
 enum Contractions {
-    /// forme contractée → forme développée
+    /// contracted form → expanded form
     static let expansions: [String: [String]] = [
         "it's": ["it", "is"],       "i'm": ["i", "am"],
         "don't": ["do", "not"],     "doesn't": ["does", "not"],
@@ -17,7 +17,7 @@ enum Contractions {
         "you're": ["you", "are"],   "i'd": ["i", "would"]
     ]
 
-    /// Vrai si `single` est la contraction exacte de `pair`.
+    /// True if `single` is the exact contraction of `pair`.
     static func matches(single: String, pair: [String]) -> Bool {
         expansions[single] == pair
     }

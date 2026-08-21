@@ -76,7 +76,7 @@ struct RecordingContent: View {
                                     .monospacedDigit()
                                     .accessibilityLabel("Elapsed time \(Int(elapsed)) seconds")
 
-                                // Transcript en direct — coupé lorsque VoiceOver lit déjà l'écran.
+                                // Live transcript — suppressed while VoiceOver is already speaking.
                                 if !voiceOverEnabled {
                                     LiveTranscriptView(finalized: finalized, volatile: volatile)
                                 }

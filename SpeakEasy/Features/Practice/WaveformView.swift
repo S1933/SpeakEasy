@@ -18,7 +18,7 @@ struct WaveformView: View {
                 let inset = barWidth * 0.25
                 let midY = size.height / 2
 
-                // Un seul Path pour toutes les barres → une seule primitive de dessin.
+                // Single Path for all bars → a single drawing primitive.
                 var path = Path()
                 for (index, sample) in samples.enumerated() {
                     let height = max(2, CGFloat(0.06 + 0.94 * sample) * size.height)

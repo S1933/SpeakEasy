@@ -3,14 +3,14 @@ import SwiftData
 import Testing
 @testable import SpeakEasy
 
-/// Test d'intégration PRIORITAIRE (#3) : traverse les couches réelles
+/// Priority integration test (#3): walks the real layers
 /// ModelContainer → recordAttempt → finalizeReview (SM-2) → dueDate
-/// → snapshot → SessionPlanner, et vérifie que la phrase due ressort en premier.
-/// Plus significatif que des tests unitaires isolés (integration A→B).
-@Suite("Intégration progression (SM-2 → planner)")
+/// → snapshot → SessionPlanner, and verifies the due sentence comes out first.
+/// More meaningful than isolated unit tests (integration A→B).
+@Suite("Progression integration (SM-2 → planner)")
 struct ProgressIntegrationTests {
 
-    @Test("Tentative → SM-2 → dueDate → le planner sort la phrase due en premier")
+    @Test("Attempt → SM-2 → dueDate → planner surfaces the due sentence first")
     func sm2DueDateDrivesPlanner() throws {
         let schema = Schema([SentenceProgress.self, AppSettings.self, DailyActivity.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
@@ -24,24 +24,24 @@ struct ProgressIntegrationTests {
                              english: "I love this place.", difficulty: 1, keywords: []),
         ])
 
-        // 1. Analytics : plusieurs tentatives ne font PAS avancer SM-2.
+        // 1. Analytics: several attempts do NOT advance SM-2.
         let service = ProgressService(context: context)
         service.recordAttempt(sentenceID: 5, score: 45)
         service.recordAttempt(sentenceID: 5, score: 70)
 
-        // 2. Planning SM-2 : UNE seule fois, à la validation de la phrase.
+        // 2. SM-2 planning: applied only ONCE, when the sentence is validated.
         service.finalizeReview(sentenceID: 5, score: 92)
         try context.save()
 
-        // 3. SentenceProgress a bien une échéance (dueDate non nil).
+        // 3. SentenceProgress has a due date (dueDate non nil).
         let progress = try context.fetch(FetchDescriptor<SentenceProgress>()).first
         #expect(progress != nil)
         #expect(progress?.sentenceID == 5)
-        #expect(progress?.attempts == 2)          // les 2 tentatives comptent
-        #expect(progress?.repetitions == 1)       // mais SM-2 n'a tourné qu'une fois
+        #expect(progress?.attempts == 2)          // both attempts count
+        #expect(progress?.repetitions == 1)       // but SM-2 only ran once
         #expect(progress?.dueDate != nil)
 
-        // 4. Snapshot → planner (now dans le futur) → la phrase due sort en premier.
+        // 4. Snapshot → planner (now in the future) → the due sentence comes out first.
         let snapshots = [5: SessionPlanner.Snapshot(
             attempts: progress?.attempts ?? 0,
             bestScore: progress?.bestScore ?? 0,

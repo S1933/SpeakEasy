@@ -2,7 +2,7 @@ import Foundation
 import os
 
 struct SentenceRepository: Sendable {
-    /// Le catalogue est immuable et embarqué : une seule lecture par process.
+    /// The catalog is immutable and bundled: read once per process.
     nonisolated static let shared = SentenceRepository()
 
     private let sentences: [LearningSentence]
@@ -16,7 +16,7 @@ struct SentenceRepository: Sendable {
         self.byCategory = Dictionary(grouping: loaded, by: \.category)
     }
 
-    /// Init d'injection — réservé aux tests.
+    /// Injection initializer — for tests only.
     nonisolated init(sentences: [LearningSentence]) {
         self.sentences = sentences
         self.byID = Dictionary(loaded: sentences)
@@ -46,7 +46,7 @@ struct SentenceRepository: Sendable {
 }
 
 private extension Dictionary where Key == Int, Value == LearningSentence {
-    /// Tolère les doublons d'id en test (garde le premier) plutôt que de crasher.
+    /// Tolerates duplicate ids in tests (keeps the first) instead of crashing.
     nonisolated init(loaded: [LearningSentence]) {
         self = Dictionary(loaded.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }

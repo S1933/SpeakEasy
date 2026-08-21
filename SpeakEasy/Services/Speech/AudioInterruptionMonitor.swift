@@ -5,9 +5,9 @@
 @MainActor
 final class AudioInterruptionMonitor {
     enum Event: Sendable {
-        case interrupted          // appel, Siri…
-        case resumable            // l'interruption est finie, reprise possible
-        case routeLost            // périphérique d'entrée débranché
+        case interrupted          // phone call, Siri, etc.
+        case resumable            // interruption ended, resumption possible
+        case routeLost            // input device disconnected
     }
 
     private var observers: [NSObjectProtocol] = []
@@ -19,7 +19,7 @@ final class AudioInterruptionMonitor {
     }
 
     deinit {
-        // NotificationCenter est thread-safe pour removeObserver.
+        // NotificationCenter is thread-safe for removeObserver.
         observers.forEach(NotificationCenter.default.removeObserver)
     }
 
@@ -35,7 +35,7 @@ final class AudioInterruptionMonitor {
             MainActor.assumeIsolated {
                 switch type {
                 case .began:
-                    Log.audio.notice("Interruption début")
+                    Log.audio.notice("Interruption began")
                     handler(.interrupted)
                 case .ended:
                     let optsRaw = note.userInfo?[AVAudioSessionInterruptionOptionKey] as? UInt ?? 0
@@ -55,7 +55,7 @@ final class AudioInterruptionMonitor {
                   let reason = AVAudioSession.RouteChangeReason(rawValue: raw) else { return }
             MainActor.assumeIsolated {
                 if reason == .oldDeviceUnavailable {
-                    Log.audio.notice("Périphérique d'entrée retiré")
+                    Log.audio.notice("Input device disconnected")
                     handler(.routeLost)
                 }
             }

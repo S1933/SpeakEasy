@@ -77,9 +77,9 @@ struct OnboardingView: View {
     }
 
     private func runSetup() async {
-        // Source unique de vérité : la locale choisie dans les Réglages, pas
-        // une valeur codée en dur (#6). Si en-GB est sélectionnée, les assets
-        // et la reconnaissance suivent cette locale.
+        // Single source of truth: the locale chosen in Settings, not a
+        // hardcoded value (#6). If en-GB is selected, the assets and the
+        // recognizer follow that locale.
         let locale = Locale(identifier: AppSettings.current(in: context).voiceLocale)
         micGranted = await PermissionService.requestMicrophone()
         speechGranted = await PermissionService.requestSpeech() == .authorized

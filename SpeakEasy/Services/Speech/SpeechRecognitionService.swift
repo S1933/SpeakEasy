@@ -18,14 +18,14 @@ final class SpeechRecognitionService {
     private(set) var status: Status = .idle
     private(set) var elapsed: TimeInterval = 0
 
-    /// Niveau audio lu par l'UI à 30 Hz (aucune invalidation @Observable).
+    /// Audio level read by the UI at 30 Hz (no @Observable invalidation).
     let meter = AudioLevelMeter()
 
     private let locale: Locale
     private let maxDuration: TimeInterval
     private let audioSession = AudioSessionController()
 
-    /// Converter temps réel, créé au setup — réutilisé, jamais ré-alloué par callback.
+    /// Real-time converter, created at setup — reused, never reallocated per callback.
     private var audioConverter: AudioFormatConverter?
 
     private var analyzer: SpeechAnalyzer?
@@ -35,24 +35,24 @@ final class SpeechRecognitionService {
     private var collectionTask: Task<Void, Never>?
     private var timerTask: Task<Void, Never>?
 
-    /// Enregistre l'audition de la tentative courante pour le replay A/B (S5.2).
+    /// Records the audition of the current attempt for A/B replay (S5.2).
     private let audioRecorder = AttemptAudioRecorder()
     private(set) var recordingURL: URL?
 
-    /// Segments définitivement figés, concaténés.
+    /// Permanently finalized segments, concatenated.
     private(set) var finalizedTranscript: String = ""
-    /// Hypothèse en cours, remplacée à chaque émission.
+    /// Current hypothesis, replaced on each emission.
     private(set) var volatileTranscript: String = ""
     private(set) var streamFailure: Error?
 
-    /// Ce que l'UI affiche en direct (cf. S5.1).
+    /// What the UI displays live (see S5.1).
     var liveTranscript: String {
         [finalizedTranscript, volatileTranscript]
             .filter { !$0.isEmpty }
             .joined(separator: " ")
     }
 
-    /// Ce qu'on envoie au scoring après finalisation.
+    /// What we send to scoring after finalization.
     private(set) var collectedTranscript: String {
         get { finalizedTranscript }
         set { finalizedTranscript = newValue }
@@ -65,7 +65,7 @@ final class SpeechRecognitionService {
     }
 
     func startRecording() async throws {
-        // Pas de retour silencieux : un état inattendu est une erreur explicite.
+        // No silent return: an unexpected state is an explicit error.
         guard status == .idle || status == .transcribing else {
             throw RecordingError.busy
         }
@@ -171,8 +171,8 @@ final class SpeechRecognitionService {
 
     private func setupPipeline() async throws {
         let transcriber = SpeechTranscriber(locale: locale, preset: .progressiveTranscription)
-        // Les assets sont garantis présents : SpeechAssetManager s'en charge à
-        // l'onboarding. Si ce n'est pas le cas, on échoue vite et proprement.
+        // Assets are guaranteed present: SpeechAssetManager handles this at
+        // onboarding. If not, we fail fast and cleanly.
         guard await SpeechTranscriber.installedLocales.contains(where: {
             $0.identifier(.bcp47) == locale.identifier(.bcp47)
         }) else {
@@ -206,7 +206,7 @@ final class SpeechRecognitionService {
         self.inputContinuation = continuation
 
         inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) { [audioRecorder] buffer, _ in
-            // Thread temps réel : aucune allocation, aucun verrou bloquant, aucun Task.
+            // Real-time thread: no allocation, no blocking lock, no Task.
             meter.ingest(buffer)
             audioRecorder.write(buffer)
             guard let converted = audioConverter.convert(buffer) else { return }
@@ -223,8 +223,8 @@ final class SpeechRecognitionService {
             do {
                 try await analyzer.start(inputSequence: stream)
             } catch {
-                // Propager jusqu'à PracticeViewModel via streamFailure (pas
-                // seulement logger) pour afficher la vraie erreur au moment du stop.
+                // Propagate up to PracticeViewModel via streamFailure (not
+                // just logged) so the real error is surfaced at stop time.
                 Log.speech.error("Analyzer pipeline failed: \(error, privacy: .public)")
                 await MainActor.run { self?.streamFailure = error }
             }
@@ -252,9 +252,9 @@ final class SpeechRecognitionService {
                     }
                 }
             } catch is CancellationError {
-                // Arrêt normal.
+                // Normal stop.
             } catch {
-                Log.speech.error("Flux de résultats interrompu: \(error, privacy: .public)")
+                Log.speech.error("Result stream interrupted: \(error, privacy: .public)")
                 await MainActor.run { self?.streamFailure = error }
             }
         }
@@ -301,7 +301,7 @@ final class SpeechRecognitionService {
         case .pcmFormatFloat32:
             guard let data = buffer.floatChannelData else { return 0 }
             var rms: Float = 0
-            vDSP_rmsqv(data[0], 1, &rms, frames)          // canal 0 suffit pour un VU-mètre
+            vDSP_rmsqv(data[0], 1, &rms, frames)          // channel 0 is enough for a VU meter
             return min(1, Double(rms) * 4)
 
         case .pcmFormatInt16:

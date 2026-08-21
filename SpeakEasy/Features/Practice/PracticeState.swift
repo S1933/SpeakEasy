@@ -7,7 +7,7 @@ struct AttemptResult: Sendable, Equatable {
     let tokens: [TokenResult]
     let mode: PracticeMode
     let wasRevealed: Bool
-    /// Enregistrement audio de la tentative (replay A/B, S5.2) — éphémère.
+    /// Audio recording of the attempt (A/B replay, S5.2) — ephemeral.
     let recordingURL: URL?
 
     init(expected: String, transcript: String, score: Int, tokens: [TokenResult],
@@ -22,7 +22,7 @@ struct AttemptResult: Sendable, Equatable {
         self.recordingURL = recordingURL
     }
 
-    /// Score qui compte pour la progression. Une réponse révélée plafonne.
+    /// Score that counts toward progression. A revealed answer is capped.
     var effectiveScore: Int { wasRevealed ? min(score, 70) : score }
 
     func withRevealed(_ revealed: Bool) -> AttemptResult {

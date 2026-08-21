@@ -14,7 +14,7 @@ final class PracticeViewModel {
         case error(RecordingError)
     }
 
-    /// Pourquoi l'enregistrement s'est terminé (S1.3)
+    /// Why the recording ended (S1.3)
     enum StopReason {
         case user
         case timeout
@@ -25,8 +25,8 @@ final class PracticeViewModel {
     private let queue: [LearningSentence]
     private(set) var queueIndex: Int = 0
     private(set) var sessionAttempts: [(LearningSentence, AttemptResult)] = []
-    /// Meilleure tentative par phrase (id) pour la session — sert de score de
-    /// finalisation SM-2 quand on passe à la phrase suivante (#13).
+    /// Best attempt per sentence (id) for the session — used as the SM-2
+    /// finalization score when moving to the next sentence (#13).
     private var sessionBest: [Int: Int] = [:]
 
     private let playback: SpeechPlaybackService
@@ -43,7 +43,7 @@ final class PracticeViewModel {
     let maxRecordingDuration: TimeInterval
     let mode: PracticeMode
 
-    /// L'utilisateur a-t-il révélé la réponse de la phrase courante ? (S4.1)
+    /// Has the user revealed the answer for the current sentence? (S4.1)
     private(set) var isAnswerRevealed = false
 
     var currentSentence: LearningSentence? {
@@ -53,7 +53,7 @@ final class PracticeViewModel {
     var elapsed: TimeInterval { recognition.elapsed }
     var meter: AudioLevelMeter { recognition.meter }
 
-    /// Un seul compteur, cohérent sur TOUS les écrans (cf. S1.7).
+    /// One single counter, consistent across ALL screens (cf. S1.7).
     var progressText: String {
         "\(min(queueIndex + 1, queue.count)) of \(queue.count)"
     }
@@ -119,15 +119,15 @@ final class PracticeViewModel {
     func retry() {
         guard case .result = phase else { return }
         sessionAttempts.removeLast()
-        // Pas de rollback : `attempts` doit refléter l'effort réel.
-        // Mais `bestScore` est un max, donc un retry raté ne dégrade jamais l'acquis.
+        // No rollback: `attempts` must reflect the real effort.
+        // But `bestScore` is a max, so a failed retry never degrades what was earned.
         phase = .ready
     }
 
     func goToNext() {
         guard case .result = phase else { return }
         playback.stop()
-        // SM-2 une SEULE fois par phrase, au passage à la suivante (#13).
+        // SM-2 exactly ONCE per sentence, when moving to the next (#13).
         if let id = currentSentence?.id, let best = sessionBest[id] {
             finalizeReview(id, best)
             sessionBest[id] = nil
@@ -168,7 +168,7 @@ final class PracticeViewModel {
             timeoutTask = Task { [weak self, maxRecordingDuration] in
                 try? await Task.sleep(for: .seconds(maxRecordingDuration))
                 guard let self, !Task.isCancelled, self.phase == .recording else { return }
-                Log.speech.notice("Auto-stop après \(maxRecordingDuration, privacy: .public)s")
+                Log.speech.notice("Auto-stop after \(maxRecordingDuration, privacy: .public)s")
                 await self.finishRecording(reason: .timeout)
             }
         } catch let error as RecordingError {
@@ -219,7 +219,7 @@ final class PracticeViewModel {
         await recognition.cancel()
     }
 
-    /// À appeler depuis `onAppear` — abonne le VM aux interruptions audio.
+    /// Call from `onAppear` — subscribes the VM to audio interruptions.
     func onAppear() {
         interruptionMonitor = AudioInterruptionMonitor { [weak self] event in
             guard let self else { return }
@@ -229,14 +229,14 @@ final class PracticeViewModel {
                 self.timeoutTask?.cancel()
                 Task { await self.recognition.cancel() }
                 Haptics.notify(.warning)
-                self.phase = .error(.audioInterruption)   // le case mort devient vivant
+                self.phase = .error(.audioInterruption)   // the dead case comes alive
             case .resumable:
-                break   // on ne relance pas automatiquement : l'utilisateur décide
+                break   // do not auto-resume: the user decides
             }
         }
     }
 
-    /// Passe en arrière-plan pendant l'enregistrement → on coupe proprement.
+    /// Going to the background while recording → clean cut.
     func handleBackgrounding() {
         guard phase == .recording else { return }
         timeoutTask?.cancel()

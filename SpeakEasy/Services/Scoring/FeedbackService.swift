@@ -7,11 +7,11 @@ struct FeedbackService: Sendable {
         let headline: String
         let detail: String?
         let tip: String?
-        /// Le mot à réécouter en boucle (S5.3).
+        /// The word to replay in a loop (S5.3).
         let drillWord: String?
     }
 
-    /// Feedback hiérarchisé qui pointe une seule chose à travailler (S4.4).
+    /// Layered feedback that points to a single thing to work on (S4.4).
     func feedback(for result: AttemptResult) -> Feedback {
         var missing: [String] = [], extras: [String] = []
         var wrong: [(String, String)] = []
@@ -33,28 +33,28 @@ struct FeedbackService: Sendable {
                             tip: nil, drillWord: nil)
         }
 
-        // Priorité 1 : un problème de prononciation identifié — le plus actionnable.
+        // Priority 1: an identified pronunciation problem — the most actionable.
         if let (expected, actual, issue) = nearMisses.first, let issue {
             return Feedback(headline: "Close — watch \(issue.label).",
                             detail: "You said “\(actual)” where the sentence has “\(expected)”.",
                             tip: issue.tip, drillWord: expected)
         }
 
-        // Priorité 2 : un seul mot-clé manquant change le sens.
+        // Priority 2: a single missing keyword changes the meaning.
         if let word = missing.first, missing.count == 1, wrong.isEmpty {
             return Feedback(headline: "Almost there.",
                             detail: "“\(word)” didn't come through.",
                             tip: "Slow down slightly on that word.", drillWord: word)
         }
 
-        // Priorité 3 : substitution lexicale isolée.
+        // Priority 3: isolated lexical substitution.
         if let (expected, actual) = wrong.first, wrong.count == 1 {
             return Feedback(headline: "One word off.",
                             detail: "You said “\(actual)” instead of “\(expected)”.",
                             tip: nil, drillWord: expected)
         }
 
-        // Priorité 4 : beaucoup d'erreurs → n'en désigner qu'une seule.
+        // Priority 4: many errors → call out just one of them.
         let focus = missing.first ?? wrong.first?.0 ?? nearMisses.first?.0
         return Feedback(headline: "Keep going.",
                         detail: focus.map { "Start with “\($0)” — get that one right, then run the whole sentence." },

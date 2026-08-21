@@ -21,13 +21,13 @@ let all = try JSONDecoder().decode([S].self, from: data)
 
 var errors: [String] = []
 
-// Unicité des ids
+// Unique ids
 let dupes = Dictionary(grouping: all, by: \.id).filter { $1.count > 1 }
-if !dupes.isEmpty { errors.append("Ids dupliqués: \(dupes.keys.sorted())") }
+if !dupes.isEmpty { errors.append("Duplicate ids: \(dupes.keys.sorted())") }
 
-// Unicité des phrases anglaises
+// Unique English sentences
 let dupeText = Dictionary(grouping: all, by: { $0.english.lowercased() }).filter { $1.count > 1 }
-if !dupeText.isEmpty { errors.append("Phrases dupliquées: \(dupeText.keys.sorted().prefix(5))") }
+if !dupeText.isEmpty { errors.append("Duplicate sentences: \(dupeText.keys.sorted().prefix(5))") }
 
 for s in all {
     let words = s.english.split(separator: " ").count
@@ -39,26 +39,26 @@ for s in all {
     }
     let lower = s.english.lowercased()
     for kw in s.keywords where !lower.contains(kw.lowercased()) {
-        errors.append("#\(s.id) mot-clé absent: \"\(kw)\"")
+        errors.append("#\(s.id) missing keyword: \"\(kw)\"")
     }
-    if s.keywords.isEmpty { errors.append("#\(s.id) sans mot-clé") }
-    // Un keyword doit être un token atomique : cost(for:) compare un keyword
-    // à un token unique. Pas de keyword multi-mots (cf. #5).
+    if s.keywords.isEmpty { errors.append("#\(s.id) has no keyword") }
+    // A keyword must be an atomic token: cost(for:) compares a keyword against
+    // a single token. No multi-word keywords (cf. #5).
     for kw in s.keywords where kw.contains(" ") {
-        errors.append("#\(s.id) mot-clé multi-mots: \"\(kw)\"")
+        errors.append("#\(s.id) multi-word keyword: \"\(kw)\"")
     }
     for v in s.acceptedVariants ?? [] where v.lowercased() == s.english.lowercased() {
-        errors.append("#\(s.id) variante identique à la canonique: \"\(v)\"")
+        errors.append("#\(s.id) variant identical to the canonical: \"\(v)\"")
     }
-    if s.french.isEmpty || s.english.isEmpty { errors.append("#\(s.id) champ vide") }
+    if s.french.isEmpty || s.english.isEmpty { errors.append("#\(s.id) empty field") }
 }
 
-// Équilibre des catégories
+// Category balance
 let byCat = Dictionary(grouping: all, by: \.category).mapValues(\.count)
 if byCat.count >= 2,
    let mx = byCat.values.max(), let mn = byCat.values.min(),
    Double(mx) / Double(mn) > 1.5 {
-    errors.append("Catégories déséquilibrées: \(byCat.sorted { $0.key < $1.key })")
+    errors.append("Unbalanced categories: \(byCat.sorted { $0.key < $1.key })")
 }
 
 if errors.isEmpty {

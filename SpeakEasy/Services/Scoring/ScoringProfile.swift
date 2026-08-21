@@ -1,15 +1,15 @@
 import Foundation
 
-/// Pondération du scoring, par mode (S4.1) / profil.
+/// Scoring weights, per mode (S4.1) / profile.
 struct ScoringProfile: Sendable, Equatable {
     var missing: Double
     var wrong: Double
     var extra: Double
-    /// Multiplicateur appliqué aux mots listés dans `keywords`.
+    /// Multiplier applied to words listed in `keywords`.
     var keywordMultiplier: Double
-    /// Multiplicateur appliqué aux mots fonctionnels (articles, auxiliaires…).
+    /// Multiplier applied to function words (articles, auxiliaries, etc.).
     var functionWordMultiplier: Double
-    /// Coût d'une substitution phonétiquement proche (cf. S4.3).
+    /// Cost of a phonetically near substitution (see S4.3).
     var nearMissRatio: Double
 
     static let strict   = ScoringProfile(missing: 1.0, wrong: 1.0, extra: 0.5,
@@ -23,7 +23,7 @@ struct ScoringProfile: Sendable, Equatable {
                                          nearMissRatio: 0.3)
 }
 
-/// Mots grammaticaux : leur omission n'entrave pas la compréhension.
+/// Grammar words: omitting them does not impede comprehension.
 enum FunctionWords {
     static let set: Set<String> = [
         "a", "an", "the", "of", "to", "in", "on", "at", "for", "with",

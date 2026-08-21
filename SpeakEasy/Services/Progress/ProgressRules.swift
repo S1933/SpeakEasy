@@ -1,12 +1,12 @@
 import Foundation
 
-/// Source unique des seuils de progression. Trois écrans les utilisaient
-/// avec des valeurs divergentes (2 vs 3 tentatives) — tout passe ici.
+/// Single source of truth for progress thresholds. Three screens were using
+/// them with diverging values (2 vs 3 attempts) — everything flows here.
 enum ProgressRules {
-    /// Une phrase est « difficile » si elle a au moins ce nombre de tentatives
-    /// sans atteindre la maîtrise.
+    /// A sentence is "difficult" if it has at least this many attempts
+    /// without reaching mastery.
     static let difficultMinimumAttempts = 2
 
-    /// Score à partir duquel un essai est considéré « maîtrisé ».
+    /// Score at and above which an attempt is considered "mastered".
     static let masteryScore = 85
 }

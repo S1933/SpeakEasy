@@ -42,9 +42,9 @@ enum SessionSizeOption: Int, CaseIterable, Identifiable, Sendable {
 }
 
 extension AppSettings {
-    /// Récupère l'unique instance, la crée si absente.
-    /// ⚠️ Ne jamais appeler depuis `body` — uniquement depuis `.task`, `onAppear`
-    /// ou l'init de l'app.
+    /// Fetches the unique instance, creating it if absent.
+    /// ⚠️ Never call from `body` — only from `.task`, `onAppear`,
+    /// or app init.
     @MainActor
     static func current(in context: ModelContext) -> AppSettings {
         var descriptor = FetchDescriptor<AppSettings>()
@@ -54,7 +54,7 @@ extension AppSettings {
         let created = AppSettings()
         context.insert(created)
         do { try context.save() }
-        catch { Log.data.error("Création AppSettings: \(error, privacy: .public)") }
+        catch { Log.data.error("Creating AppSettings: \(error, privacy: .public)") }
         return created
     }
 }

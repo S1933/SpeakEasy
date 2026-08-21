@@ -10,6 +10,6 @@ enum Log {
     nonisolated static let data     = Logger(subsystem: subsystem, category: "data")
     nonisolated static let ui       = Logger(subsystem: subsystem, category: "ui")
 
-    /// Signposts pour Instruments (mesure du pipeline audio).
+    /// Signposts for Instruments (audio pipeline measurement).
     nonisolated static let signposter = OSSignposter(subsystem: subsystem, category: "perf")
 }

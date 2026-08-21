@@ -19,7 +19,7 @@ final class SentenceProgress {
     var repetitions: Int
     var intervalDays: Int
 
-    /// Historique compact des N derniers scores, pour la courbe (S5.6).
+    /// Compact history of the last N scores, for the sparkline (S5.6).
     var recentScores: [Int]
 
     init(

@@ -17,7 +17,7 @@ struct PracticeViewModelTests {
                           recordAttempt: recorded)
     }
 
-    @Test("Cycle nominal : ready → recording → result")
+    @Test("Nominal cycle: ready → recording → result")
     func happyPath() async {
         let vm = makeVM()
         #expect(vm.phase == .ready)
@@ -27,14 +27,14 @@ struct PracticeViewModelTests {
         #expect(vm.lastResult?.score == 100)
     }
 
-    @Test("Un échec du micro affiche l'écran d'erreur, pas un crash")
+    @Test("A microphone failure shows the error screen, not a crash")
     func microphoneDenied() async {
         let vm = makeVM(recognizer: FakeRecognizer(script: .fails(.microphoneDenied)))
         await vm.toggleRecording()
         #expect(vm.lastError == .microphoneDenied)
     }
 
-    @Test("retry() retire la tentative de la session mais conserve la phrase")
+    @Test("retry() removes the attempt from the session but keeps the sentence")
     func retryKeepsSentence() async {
         let vm = makeVM()
         await vm.toggleRecording(); await vm.toggleRecording()
@@ -44,7 +44,7 @@ struct PracticeViewModelTests {
         #expect(vm.currentSentence?.id == before)
     }
 
-    @Test("La persistance est appelée exactement une fois par tentative")
+    @Test("Persistence is called exactly once per attempt")
     func persistsOncePerAttempt() async {
         var calls: [(Int, Int)] = []
         let vm = makeVM(recorded: { calls.append(($0, $1)) })
@@ -55,7 +55,7 @@ struct PracticeViewModelTests {
         #expect(calls.allSatisfy { $0.0 == 1 })
     }
 
-    @Test("La session se termine après la dernière phrase de la file")
+    @Test("The session ends after the last sentence in the queue")
     func completesSession() async {
         var finished = false
         let vm = PracticeViewModel(
@@ -68,7 +68,7 @@ struct PracticeViewModelTests {
         #expect(finished)
     }
 
-    @Test("Un double tap rapide ne lance pas deux enregistrements")
+    @Test("A rapid double tap does not start two recordings")
     func noDoubleStart() async {
         let fake = FakeRecognizer(script: .succeeds("ok"))
         fake.startDelay = .milliseconds(100)
@@ -79,8 +79,8 @@ struct PracticeViewModelTests {
         #expect(fake.startCount == 1)
     }
 
-    // S1.3 — rendu possible par le faux reconnaisseur (S3.3).
-    @Test("Le timeout fait passer en .processing puis .result")
+    // S1.3 — made possible by the fake recognizer (S3.3).
+    @Test("Timeout transitions to .processing then .result")
     func autoStopTransitions() async {
         let fake = FakeRecognizer(script: .succeeds("hello"))
         let vm = PracticeViewModel(

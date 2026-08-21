@@ -1,12 +1,12 @@
 import Foundation
 
-/// Dimension pédagogique de premier ordre : ce que l'utilisateur doit produire.
+/// Primary learning dimension: what the user must produce.
 enum PracticeMode: String, Codable, CaseIterable, Identifiable, Sendable {
-    /// Anglais visible. Cible : prononciation, rythme, accent tonique.
+    /// English visible. Target: pronunciation, rhythm, stress.
     case repeatAfter
-    /// Français seul. Cible : production, rappel lexical, structure.
+    /// French only. Target: production, lexical recall, structure.
     case translate
-    /// Anglais affiché puis masqué. Cible : mémoire de travail.
+    /// English shown then hidden. Target: working memory.
     case recall
 
     var id: String { rawValue }
@@ -29,8 +29,8 @@ enum PracticeMode: String, Codable, CaseIterable, Identifiable, Sendable {
 
     var showsEnglishBeforeRecording: Bool { self == .repeatAfter }
 
-    /// En Translate, la marge d'erreur lexicale doit être plus généreuse :
-    /// une variante correcte ne doit pas être punie comme une faute.
+    /// In Translate, the lexical error margin must be more generous:
+    /// a correct variant must not be punished as a mistake.
     var scoringProfile: ScoringProfile {
         switch self {
         case .repeatAfter: .strict

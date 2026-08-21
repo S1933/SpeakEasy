@@ -13,8 +13,8 @@ struct SpeakEasyApp: App {
 
     enum StoreHealth: Equatable {
         case healthy
-        case recoveredFromCorruption   // store recréé, progression perdue
-        case ephemeral                 // in-memory, rien ne sera sauvegardé
+        case recoveredFromCorruption   // store recreated, progress lost
+        case ephemeral                 // in-memory, nothing will be saved
     }
 
     init() {
@@ -27,35 +27,35 @@ struct SpeakEasyApp: App {
         let schema = Schema([SentenceProgress.self, AppSettings.self, DailyActivity.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
-        // Palier 1 — nominal.
+        // Stage 1 — nominal.
         do {
             let c = try ModelContainer(for: schema, configurations: config)
             return (c, .healthy)
         } catch {
-            Log.data.error("Ouverture du store impossible: \(error, privacy: .public)")
+            Log.data.error("Unable to open store: \(error, privacy: .public)")
         }
 
-        // Palier 2 — store illisible : on le met de côté et on repart à neuf.
-        // On ARCHIVE plutôt que de supprimer (récupérable via support), en
-        // incluant les journaux WAL/SHM qui rendraient le store à nouveau
-        // illisible s'ils étaient laissés à côté d'un store recréé.
+        // Stage 2 — unreadable store: set it aside and start fresh.
+        // We ARCHIVE rather than delete (recoverable via support), including
+        // the WAL/SHM journals which would render the store unreadable again
+        // if left next to a recreated store.
         if let url = config.url, FileManager.default.fileExists(atPath: url.path) {
             archiveStore(at: url, timestamp: Int(Date.now.timeIntervalSince1970))
-            Log.data.fault("Store archivé vers \(url.lastPathComponent, privacy: .public)")
+            Log.data.fault("Store archived to \(url.lastPathComponent, privacy: .public)")
             if let c = try? ModelContainer(for: schema, configurations: config) {
                 return (c, .recoveredFromCorruption)
             }
         }
 
-        // Palier 3 — dernier recours : session éphémère. L'app reste utilisable.
+        // Stage 3 — last resort: ephemeral session. The app remains usable.
         let memory = ModelConfiguration(schema: schema, isStoredInMemoryOnly: true)
         let c = try! ModelContainer(for: schema, configurations: memory)
-        Log.data.fault("Bascule en stockage éphémère")
+        Log.data.fault("Falling back to ephemeral storage")
         return (c, .ephemeral)
     }
 
-    /// Archive le store et ses journaux WAL/SHM sous un suffixe horodaté, pour
-    /// permettre une récupération manuelle si besoin. Ne supprime jamais.
+    /// Archives the store and its WAL/SHM journals under a timestamped suffix,
+    /// to allow manual recovery if needed. Never deletes.
     private static func archiveStore(at url: URL, timestamp: Int) {
         let archive = url.appendingPathExtension("corrupt-\(timestamp)")  // default.store.corrupt-<ts>
         for (sidecar, archived) in [("", ""), ("-wal", "-wal"), ("-shm", "-shm")] {

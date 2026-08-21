@@ -5,7 +5,7 @@ import Testing
 @Suite("ReviewScheduler")
 struct ReviewSchedulerTests {
 
-    @Test("Un score parfait allonge l'intervalle")
+    @Test("A perfect score lengthens the interval")
     func successGrows() {
         let p = SentenceProgress(sentenceID: 1)
         ReviewScheduler.apply(score: 100, to: p)   // 1 j
@@ -15,7 +15,7 @@ struct ReviewSchedulerTests {
         #expect(p.easeFactor > 2.5)
     }
 
-    @Test("Un échec réinitialise l'intervalle mais pas le facteur")
+    @Test("A failure resets the interval but not the factor")
     func failureResets() {
         let p = SentenceProgress(sentenceID: 1)
         for _ in 0..<4 { ReviewScheduler.apply(score: 100, to: p) }
@@ -24,10 +24,10 @@ struct ReviewSchedulerTests {
         #expect(p.intervalDays == 1)
         #expect(p.repetitions == 0)
         #expect(p.easeFactor < easeBefore)
-        #expect(p.easeFactor >= 1.3)      // plancher respecté
+        #expect(p.easeFactor >= 1.3)      // floor respected
     }
 
-    @Test("L'intervalle est plafonné à 180 jours")
+    @Test("The interval is capped at 180 days")
     func capped() {
         let p = SentenceProgress(sentenceID: 1)
         for _ in 0..<40 { ReviewScheduler.apply(score: 100, to: p) }

@@ -5,8 +5,8 @@ import Testing
 @Suite("SessionPlanner")
 struct SessionPlannerTests {
 
-    /// Petit corpus dédié — aucun lien avec le JSON embarqué ni Bundle.main
-    /// (Phases 2 #17/8 : les tests ne dépendent pas du catalogue réel).
+    /// Small dedicated corpus — no link to the embedded JSON or Bundle.main
+    /// (Phases 2 #17/8: tests do not depend on the real catalog).
     private func makeRepository() -> SentenceRepository {
         let sentences = [
             sentence(id: 10, diff: 1, text: "I eat an apple."),
@@ -27,14 +27,14 @@ struct SessionPlannerTests {
                          english: text, difficulty: diff, keywords: [])
     }
 
-    @Test("Une session neuve commence par les phrases les plus faciles")
+    @Test("A new session starts with the easiest sentences")
     func coldStart() {
         let q = SessionPlanner(repository: makeRepository()).buildQueue(size: 5, progress: [:])
         #expect(q.count == 5)
         #expect(q.allSatisfy { $0.difficulty == 1 })
     }
 
-    @Test("Les phrases difficiles passent devant les inédites")
+    @Test("Difficult sentences come before unseen ones")
     func difficultFirst() {
         let hard = SessionPlanner.Snapshot(
             attempts: 4, bestScore: 40, lastPracticedAt: .now,
@@ -44,7 +44,7 @@ struct SessionPlannerTests {
         #expect(q.first?.id == 21)
     }
 
-    @Test("Une phrase due passe en première position")
+    @Test("A due sentence moves to first position")
     func dueDateFirst() {
         let due = SessionPlanner.Snapshot(
             attempts: 1, bestScore: 70, lastPracticedAt: .now,
@@ -54,20 +54,20 @@ struct SessionPlannerTests {
         #expect(q.first?.id == 20)
     }
 
-    @Test("Aucun doublon dans la file")
+    @Test("No duplicates in the queue")
     func noDuplicates() {
         let q = SessionPlanner(repository: makeRepository()).buildQueue(size: 20, progress: [:])
         #expect(Set(q.map(\.id)).count == q.count)
     }
 
-    @Test("La file ne dépasse jamais la taille du corpus")
+    @Test("The queue never exceeds the catalog size")
     func clampedToCatalog() {
         let repo = makeRepository()
         let q = SessionPlanner(repository: repo).buildQueue(size: 999, progress: [:])
         #expect(q.count == repo.count)
     }
 
-    @Test("Aucun id dupliqué dans le corpus de test")
+    @Test("No duplicate id in the test catalog")
     func uniqueIDs() {
         let ids = makeRepository().all.map(\.id)
         #expect(Set(ids).count == ids.count)

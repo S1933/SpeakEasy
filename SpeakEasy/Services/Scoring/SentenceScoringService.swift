@@ -6,14 +6,14 @@ struct SentenceScoringService: Sendable {
 
     // MARK: - Public API
 
-    /// Scoring simple (formulaires de test / pipelines sans mode).
+    /// Simple scoring (test forms / pipelines without a mode).
     func score(expected: String, transcript: String) -> AttemptResult {
         scoreAgainst(expected: expected, transcript: transcript,
                      keywords: [], profile: .strict, mode: .repeatAfter)
     }
 
-    /// Scoring complet : meilleure variante acceptée, pondération mots-clés,
-    /// profile du mode, contractions.
+    /// Full scoring: best variant accepted, keyword weighting,
+    /// mode profile, contractions.
     func score(sentence: LearningSentence, transcript: String,
                mode: PracticeMode, wasRevealed: Bool = false) -> AttemptResult {
         let profile = mode.scoringProfile
@@ -38,11 +38,11 @@ struct SentenceScoringService: Sendable {
         return base
     }
 
-    /// Normalisation qui atténue la variance sur les phrases courtes (S4.6).
-    /// Le dénominateur effectif est borné vers une longueur de référence : un
-    /// plancher de 4 et un plafond de 12 gardent le seuil de maîtrise (85)
-    /// comparable quelle que soit la longueur — une erreur sur une phrase
-    /// courte coûte plus que sur une phrase longue.
+    /// Normalization that mitigates variance on short sentences (S4.6).
+    /// The effective denominator is bounded toward a reference length: a
+    /// floor of 4 and a ceiling of 12 keep the mastery threshold (85)
+    /// comparable regardless of length — one error on a short sentence
+    /// costs more than on a long one.
     private func normalizedScore(errors: Double, expectedCount: Int) -> Int {
         let n = Double(expectedCount)
         let effective = min(max(n, 4.0), 12.0)
@@ -60,8 +60,8 @@ struct SentenceScoringService: Sendable {
             return .empty(expected: expected, transcript: transcript, mode: mode)
         }
 
-        // Transcript vide → 0, sans passer par l'alignement (évite le chemin
-        // dégénéré et fournit des chips « manquant » pour chaque token attendu).
+        // Empty transcript → 0, without going through alignment (avoids the
+        // degenerate path and supplies "missing" chips for each expected token).
         if transcriptTokens.isEmpty {
             return AttemptResult(expected: expected, transcript: transcript, score: 0,
                                  tokens: SentenceNormalizer.displayTokens(expected).map {
@@ -105,7 +105,7 @@ struct SentenceScoringService: Sendable {
                              score: score, tokens: tokens, mode: mode)
     }
 
-    // MARK: - Alignement (DP avec contractions et near-miss)
+    // MARK: - Alignment (DP with contractions and near-miss)
 
     enum Backtrace: Sendable {
         case match, nearMiss, substitute, insert, delete
@@ -118,8 +118,8 @@ struct SentenceScoringService: Sendable {
         case substitute(expectedIdx: Int, transcriptIdx: Int)
         case insert(expectedIdx: Int)
         case delete(transcriptIdx: Int)
-        case mergeExpected(expectedIdx: Int, transcriptIdx: Int)     // attendu contracté (1) ↔ transcript développé (2)
-        case mergeTranscript(expectedIdx: Int, transcriptIdx: Int)   // attendu développé (2) ↔ transcript contracté (1)
+        case mergeExpected(expectedIdx: Int, transcriptIdx: Int)     // expected contracted (1) ↔ transcript expanded (2)
+        case mergeTranscript(expectedIdx: Int, transcriptIdx: Int)   // expected expanded (2) ↔ transcript contracted (1)
     }
 
     private func align(expected: [String], transcript: [String],
@@ -160,14 +160,14 @@ struct SentenceScoringService: Sendable {
                 if insertCost < best { best = insertCost; bestOp = .insert }
                 if deleteCost < best { best = deleteCost; bestOp = .delete }
 
-                // Cas A : attendu développé ("it is"), transcript contracté ("it's")
+                // Case A: expected expanded ("it is"), transcript contracted ("it's")
                 if i >= 2, Contractions.matches(single: transcript[j - 1],
                                                 pair: [expected[i - 2], expected[i - 1]]),
                    dp[i - 2][j - 1] < best {
                     best = dp[i - 2][j - 1]
                     bestOp = .mergeTranscript
                 }
-                // Cas B : attendu contracté ("it's"), transcript développé ("it is")
+                // Case B: expected contracted ("it's"), transcript expanded ("it is")
                 if j >= 2, Contractions.matches(single: expected[i - 1],
                                                 pair: [transcript[j - 2], transcript[j - 1]]),
                    dp[i - 1][j - 2] < best {
@@ -224,10 +224,10 @@ struct SentenceScoringService: Sendable {
             case .delete(let t):
                 out.append(TokenResult(text: transcript[t], status: .extra))
             case .mergeExpected(let e, _):
-                // attendu contracté (1 token) → un seul chip correct
+                // expected contracted (1 token) → a single correct chip
                 out.append(TokenResult(text: expectedText[e], status: .correct))
             case .mergeTranscript(let e, _):
-                // attendu développé (2 tokens) → deux chips corrects
+                // expected expanded (2 tokens) → two correct chips
                 out.append(TokenResult(text: expectedText[e - 1], status: .correct))
                 out.append(TokenResult(text: expectedText[e], status: .correct))
             }

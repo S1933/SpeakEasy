@@ -22,9 +22,9 @@ final class ProgressService {
         progress.isCompleted = progress.bestScore >= ProgressRules.masteryScore
         progress.recentScores.append(score)
         if progress.recentScores.count > 20 { progress.recentScores.removeFirst() }
-        // NOTE : pas de ReviewScheduler ici — la planification SM-2 n'est
-        // appliquée qu'UNE fois par phrase, via finalizeReview(), quand
-        // l'utilisateur passe à la phrase suivante (cf. #13).
+        // NOTE: no ReviewScheduler here — SM-2 planning is applied
+        // ONCE per sentence, via finalizeReview(), when the user moves on
+        // to the next sentence (see #13).
 
         let day = Calendar.current.startOfDay(for: date)
         let activity = fetchOrCreateActivity(day: day)
@@ -37,10 +37,10 @@ final class ProgressService {
         return progress
     }
 
-    /// Applique la planification SM-2 UNE fois, quand une phrase est validée
-    /// (passage à la phrase suivante). `score` = la meilleure tentative de la
-    /// session pour cette phrase — un retry ne fait donc jamais avancer SM-2
-    /// plusieurs fois.
+    /// Applies SM-2 planning ONCE, when a sentence is validated
+    /// (moving on to the next sentence). `score` = the best attempt of the
+    /// session for this sentence — a retry therefore never advances SM-2
+    /// multiple times.
     @discardableResult
     func finalizeReview(sentenceID: Int, score: Int, on date: Date = .now) -> SentenceProgress {
         let progress = fetchOrCreate(sentenceID: sentenceID)

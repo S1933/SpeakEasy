@@ -1,20 +1,20 @@
 import SwiftUI
 
-/// Design system minimal — contraste WCAG garanti sur les actions principales.
+/// Minimal design system — WCAG contrast guaranteed on primary actions.
 enum Theme {
-    /// Couleur de marque contrôlée, PAS `.tint` système (que l'utilisateur
-    /// peut choisir jaune pâle → blanc illisible). À remplacer par
-    /// `Color("BrandPrimary")` une fois l'asset créé dans Assets.xcassets.
+    /// Controlled brand color, NOT the system `.tint` (which the user can
+    /// choose as pale yellow → unreadable white). To be replaced by
+    /// `Color("BrandPrimary")` once the asset is created in Assets.xcassets.
     static let brand = Color(uiColor: .systemIndigo)
 
-    /// Couleur de texte garantissant un contraste AA sur `background`.
+    /// Text color guaranteeing AA contrast on `background`.
     static func onColor(for background: Color) -> Color {
         background.relativeLuminance > 0.45 ? .black : .white
     }
 }
 
 extension Color {
-    /// Luminance relative WCAG.
+    /// WCAG relative luminance.
     var relativeLuminance: Double {
         #if canImport(UIKit)
         var r: CGFloat = 0, g: CGFloat = 0, b: CGFloat = 0, a: CGFloat = 0
@@ -30,7 +30,7 @@ extension Color {
     }
 }
 
-/// Style de bouton principal, unique et réutilisé partout.
+/// Primary button style, single and reused everywhere.
 struct PrimaryButtonStyle: ButtonStyle {
     @Environment(\.isEnabled) private var isEnabled
 

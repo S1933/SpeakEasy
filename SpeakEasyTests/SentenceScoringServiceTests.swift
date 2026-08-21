@@ -23,11 +23,11 @@ final class SentenceScoringServiceTests: XCTestCase {
         XCTAssertEqual(r.score, 100)
     }
 
-    // Depuis S4.2/S4.6, la pondération (mots fonctionnels) et la normalisation
-    // de longueur changent les scores absolus. Valeurs recomputées.
+    // Since S4.2/S4.6, weighting (function words) and length
+    // normalization change the absolute scores. Values recomputed.
     func testMissingOneFunctionWordScores92() {
         let r = service.score(expected: "I need to check the logs",
-                              transcript: "I need check the logs")   // "to" omis (mot fonctionnel)
+                              transcript: "I need check the logs")   // "to" omitted (function word)
         XCTAssertEqual(r.score, 92)
         XCTAssertEqual(r.tokens.count, 6)
         if case .missing = r.tokens[2].status {
@@ -51,7 +51,7 @@ final class SentenceScoringServiceTests: XCTestCase {
     func testExtraWordHasLowerPenalty() {
         let r = service.score(expected: "I need to check",
                               transcript: "I really need to check")
-        // weightedErrors = 0.5 (un mot en trop), score lissé sur la longueur
+        // weightedErrors = 0.5 (one extra word), length-normalized score
         XCTAssertEqual(r.score, 88)
     }
 

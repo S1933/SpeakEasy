@@ -1,10 +1,10 @@
 import Foundation
 
-/// Variante de SM-2 (SuperMemo) adaptée : la « qualité de rappel » n'est pas
-/// saisie par l'utilisateur mais dérivée du score de prononciation.
+/// Adapted variant of SM-2 (SuperMemo): the "recall quality" is not entered
+/// by the user but derived from the pronunciation score.
 enum ReviewScheduler {
 
-    /// Score 0–100 → qualité 0–5 attendue par SM-2.
+    /// Score 0–100 → quality 0–5 expected by SM-2.
     static func quality(from score: Int) -> Int {
         switch score {
         case 95...100: 5
@@ -21,7 +21,7 @@ enum ReviewScheduler {
         let q = quality(from: score)
 
         if q < 3 {
-            // Échec : on réinitialise l'intervalle, la phrase revient très vite.
+            // Failure: reset the interval, the sentence comes back very soon.
             progress.repetitions = 0
             progress.intervalDays = 1
         } else {
@@ -33,11 +33,11 @@ enum ReviewScheduler {
             }
         }
 
-        // Ajustement du facteur de facilité (formule SM-2 d'origine).
+        // Adjust the ease factor (original SM-2 formula).
         let delta = 0.1 - Double(5 - q) * (0.08 + Double(5 - q) * 0.02)
         progress.easeFactor = max(1.3, progress.easeFactor + delta)
 
-        // Plafond : au-delà de 6 mois, l'intervalle n'apporte plus rien.
+        // Cap: beyond 6 months, the interval no longer adds value.
         progress.intervalDays = min(progress.intervalDays, 180)
 
         progress.dueDate = Calendar.current.date(

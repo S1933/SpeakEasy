@@ -4,17 +4,17 @@ import Testing
 @Suite("PracticeMode")
 struct PracticeModeTests {
 
-    @Test("Translate ne divulgue pas la réponse")
+    @Test("Translate does not reveal the answer")
     func translateHidesAnswer() {
         #expect(PracticeMode.translate.showsEnglishBeforeRecording == false)
     }
 
-    @Test("Repeat affiche l'anglais avant l'enregistrement")
+    @Test("Repeat shows English before recording")
     func repeatShowsEnglish() {
         #expect(PracticeMode.repeatAfter.showsEnglishBeforeRecording == true)
     }
 
-    @Test("Les profils de scoring sont cohérents avec le mode")
+    @Test("Scoring profiles are consistent with the mode")
     func profiles() {
         #expect(PracticeMode.repeatAfter.scoringProfile == .strict)
         #expect(PracticeMode.translate.scoringProfile == .lenient)

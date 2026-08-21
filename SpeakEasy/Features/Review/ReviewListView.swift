@@ -2,7 +2,7 @@ import SwiftUI
 import SwiftData
 
 struct ReviewListView: View {
-    // Même définition de « difficile » que ProgressQueries/SessionPlanner (#12).
+    // Same definition of "difficult" as ProgressQueries/SessionPlanner (#12).
     private static let difficultPredicate = #Predicate<SentenceProgress> {
         $0.attempts >= ProgressRules.difficultMinimumAttempts
             && $0.bestScore < ProgressRules.masteryScore

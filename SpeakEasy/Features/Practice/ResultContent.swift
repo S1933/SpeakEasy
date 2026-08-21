@@ -154,8 +154,8 @@ struct TokenResultRow: View {
         var dashed: Bool
     }
 
-    /// Cinq états, trois canaux redondants (symbole + trait + couleur) :
-    /// lisible même en niveaux de gris / daltonisme.
+    /// Five states, three redundant channels (symbol + stroke + color):
+    /// readable even in grayscale / for color blindness.
     private func chipStyle(_ token: TokenResult) -> ChipStyle {
         switch token.status {
         case .correct:

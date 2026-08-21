@@ -52,9 +52,9 @@ struct PracticeView: View {
             viewModel.onAppear()
         }
         .onChange(of: scenePhase) { _, newPhase in
-            // Réagit UNIQUEMENT au vrai backgrounding (⌂ ou Home indicator).
-            // `.inactive` est transitoire (notifications, contrôle du volume,
-            // app switcher) et ne doit pas interrompre l'enregistrement.
+            // Reacts ONLY to actual backgrounding (home button or indicator).
+            // `.inactive` is transient (notifications, volume controls,
+            // app switcher) and must not interrupt the recording.
             if newPhase == .background { viewModel.handleBackgrounding() }
         }
     }
