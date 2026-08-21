@@ -42,6 +42,11 @@ for s in all {
         errors.append("#\(s.id) mot-clé absent: \"\(kw)\"")
     }
     if s.keywords.isEmpty { errors.append("#\(s.id) sans mot-clé") }
+    // Un keyword doit être un token atomique : cost(for:) compare un keyword
+    // à un token unique. Pas de keyword multi-mots (cf. #5).
+    for kw in s.keywords where kw.contains(" ") {
+        errors.append("#\(s.id) mot-clé multi-mots: \"\(kw)\"")
+    }
     for v in s.acceptedVariants ?? [] where v.lowercased() == s.english.lowercased() {
         errors.append("#\(s.id) variante identique à la canonique: \"\(v)\"")
     }

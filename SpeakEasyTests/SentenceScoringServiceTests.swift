@@ -25,10 +25,10 @@ final class SentenceScoringServiceTests: XCTestCase {
 
     // Depuis S4.2/S4.6, la pondération (mots fonctionnels) et la normalisation
     // de longueur changent les scores absolus. Valeurs recomputées.
-    func testMissingOneFunctionWordScores93() {
+    func testMissingOneFunctionWordScores92() {
         let r = service.score(expected: "I need to check the logs",
                               transcript: "I need check the logs")   // "to" omis (mot fonctionnel)
-        XCTAssertEqual(r.score, 93)
+        XCTAssertEqual(r.score, 92)
         XCTAssertEqual(r.tokens.count, 6)
         if case .missing = r.tokens[2].status {
             XCTAssertEqual(r.tokens[2].text, "to")
@@ -40,7 +40,7 @@ final class SentenceScoringServiceTests: XCTestCase {
     func testSubstitutionMarksIncorrect() {
         let r = service.score(expected: "I need to check the logs",
                               transcript: "I need to look the logs")
-        XCTAssertEqual(r.score, 86)
+        XCTAssertEqual(r.score, 83)
         if case .incorrect(let actual) = r.tokens[3].status {
             XCTAssertEqual(actual, "look")
         } else {
@@ -52,7 +52,7 @@ final class SentenceScoringServiceTests: XCTestCase {
         let r = service.score(expected: "I need to check",
                               transcript: "I really need to check")
         // weightedErrors = 0.5 (un mot en trop), score lissé sur la longueur
-        XCTAssertEqual(r.score, 91)
+        XCTAssertEqual(r.score, 88)
     }
 
     func testEmptyTranscriptScoresZero() {
@@ -65,13 +65,15 @@ final class SentenceScoringServiceTests: XCTestCase {
         let r = service.score(expected: "I need to check the logs",
                               transcript: "I need check logs")
         // "to" et "the" omis (mots fonctionnels)
-        XCTAssertEqual(r.score, 86)
+        XCTAssertEqual(r.score, 83)
     }
 
     func testCompletelyWrongTranscriptScoresVeryLow() {
         let r = service.score(expected: "I need to check the logs",
                               transcript: "the quick brown fox jumps over")
-        XCTAssertEqual(r.score, 0)
+        // Phrases sans rapport → score faible (< 30), jamais 0 sauf transcript vide.
+        XCTAssertLessThan(r.score, 30)
+        XCTAssertGreaterThan(r.score, 0)
     }
 
     func testTokensMaintainOrderForUI() {

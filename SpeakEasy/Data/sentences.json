@@ -26,7 +26,7 @@
   {"id": 25, "category": "development", "french": "Ça marche sur ma machine.", "english": "It works on my machine.", "difficulty": 1, "keywords": ["works", "machine"]},
   {"id": 26, "category": "development", "french": "Je dois vérifier les logs.", "english": "I need to check the logs.", "difficulty": 1, "keywords": ["need", "check", "logs"]},
   {"id": 27, "category": "development", "french": "Je vais regarder côté backend.", "english": "I'll check the backend side.", "difficulty": 1, "keywords": ["backend"]},
-  {"id": 28, "category": "development", "french": "J'ai créé une pull request.", "english": "I created a pull request.", "difficulty": 1, "keywords": ["created", "pull request"]},
+  {"id": 28, "category": "development", "french": "J'ai créé une pull request.", "english": "I created a pull request.", "difficulty": 1, "keywords": ["created", "pull", "request"]},
   {"id": 29, "category": "development", "french": "Je dois tester un peu plus avant la review.", "english": "I need to test it a bit more before the review.", "difficulty": 3, "keywords": ["need", "test", "review"]},
   {"id": 30, "category": "development", "french": "Tous les tests sont passés.", "english": "All the tests passed.", "difficulty": 1, "keywords": ["tests", "passed"]},
   {"id": 31, "category": "development", "french": "Certains tests sont encore en cours.", "english": "Some tests are still running.", "difficulty": 1, "keywords": ["some", "tests", "still", "running"]},
@@ -44,11 +44,11 @@
   {"id": 43, "category": "meetings", "french": "Quelqu'un a une autre idée ?", "english": "Does anyone have another idea?", "difficulty": 1, "keywords": ["anyone", "another", "idea"]},
   {"id": 44, "category": "meetings", "french": "C'est tout pour moi.", "english": "That's all for me.", "difficulty": 1, "keywords": ["all", "me"]},
   {"id": 45, "category": "organization", "french": "Je regarde ça cet après-midi.", "english": "I'll check this this afternoon.", "difficulty": 1, "keywords": ["afternoon"]},
-  {"id": 46, "category": "organization", "french": "Je reviens vers toi quand j'ai plus d'informations.", "english": "I'll get back to you when I have more information.", "difficulty": 2, "keywords": ["get back", "information"]},
+  {"id": 46, "category": "organization", "french": "Je reviens vers toi quand j'ai plus d'informations.", "english": "I'll get back to you when I have more information.", "difficulty": 2, "keywords": ["get", "back", "information"]},
   {"id": 47, "category": "organization", "french": "Je te tiens au courant.", "english": "I'll keep you posted.", "difficulty": 1, "keywords": ["keep", "posted"]},
   {"id": 48, "category": "organization", "french": "Je dois finir quelque chose avant.", "english": "I need to finish something first.", "difficulty": 1, "keywords": ["finish", "first"]},
   {"id": 49, "category": "organization", "french": "Tout devrait être prêt demain.", "english": "Everything should be ready tomorrow.", "difficulty": 1, "keywords": ["ready", "tomorrow"]},
-  {"id": 50, "category": "organization", "french": "S'il y a quoi que ce soit, dis-moi.", "english": "If there's anything, let me know.", "difficulty": 2, "keywords": ["anything", "let me know"]},
+  {"id": 50, "category": "organization", "french": "S'il y a quoi que ce soit, dis-moi.", "english": "If there's anything, let me know.", "difficulty": 2, "keywords": ["anything", "let", "me", "know"]},
   {"id": 51, "category": "opinions", "french": "À mon avis, c'est la bonne approche.", "english": "In my opinion, it's the right approach.", "difficulty": 2, "keywords": ["opinion", "right", "approach"]},
   {"id": 52, "category": "opinions", "french": "Je préfère attendre un peu avant de décider.", "english": "I'd rather wait a bit before deciding.", "difficulty": 2, "keywords": ["rather", "wait", "deciding"]},
   {"id": 53, "category": "opinions", "french": "C'est exactement ce que je pensais.", "english": "That's exactly what I thought.", "difficulty": 2, "keywords": ["exactly", "thought"]},
@@ -98,5 +98,5 @@
   {"id": 97, "category": "organization", "french": "Le planning des livraisons doit être mis à jour chaque semaine.", "english": "The delivery schedule needs to be updated every week.", "difficulty": 2, "keywords": ["delivery", "schedule", "updated", "week"]},
   {"id": 98, "category": "organization", "french": "Merci de joindre le bon de commande à votre email.", "english": "Please attach the purchase order to your email.", "difficulty": 2, "keywords": ["attach", "purchase", "order", "email"]},
   {"id": 99, "category": "organization", "french": "J'ai conservé une trace écrite de chaque décision.", "english": "I kept a written record of every decision.", "difficulty": 2, "keywords": ["kept", "record", "decision"]},
-  {"id": 100, "category": "organization", "french": "L'inventaire est à jour et toutes les références sont vérifiées.", "english": "The inventory is up to date and all the references are checked.", "difficulty": 3, "keywords": ["inventory", "up to date", "references", "checked"]}
+  {"id": 100, "category": "organization", "french": "L'inventaire est à jour et toutes les références sont vérifiées.", "english": "The inventory is up to date and all the references are checked.", "difficulty": 3, "keywords": ["inventory", "up", "to", "date", "references", "checked"]}
 ]

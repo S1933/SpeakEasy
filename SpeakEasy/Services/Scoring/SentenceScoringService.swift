@@ -39,12 +39,14 @@ struct SentenceScoringService: Sendable {
     }
 
     /// Normalisation qui atténue la variance sur les phrases courtes (S4.6).
-    /// Le dénominateur effectif est lissé vers une longueur de référence.
+    /// Le dénominateur effectif est borné vers une longueur de référence : un
+    /// plancher de 4 et un plafond de 12 gardent le seuil de maîtrise (85)
+    /// comparable quelle que soit la longueur — une erreur sur une phrase
+    /// courte coûte plus que sur une phrase longue.
     private func normalizedScore(errors: Double, expectedCount: Int) -> Int {
         let n = Double(expectedCount)
-        let referenceLength = 8.0
-        let effective = (n * referenceLength).squareRoot()
-        let raw = 1 - errors / max(effective, 2)
+        let effective = min(max(n, 4.0), 12.0)
+        let raw = 1 - errors / effective
         return Int((max(0, min(1, raw)) * 100).rounded())
     }
 
