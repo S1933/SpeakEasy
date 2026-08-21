@@ -205,13 +205,15 @@ final class SpeechRecognitionService {
         let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream()
         self.inputContinuation = continuation
 
-        inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) { [audioRecorder] buffer, _ in
-            // Real-time thread: no allocation, no blocking lock, no Task.
-            meter.ingest(buffer)
-            audioRecorder.write(buffer)
-            guard let converted = audioConverter.convert(buffer) else { return }
-            continuation.yield(AnalyzerInput(buffer: converted))
-        }
+        inputNode.installTap(
+            onBus: 0, bufferSize: 4096, format: nil,
+            block: Self.makeTapBlock(
+                audioRecorder: audioRecorder,
+                meter: meter,
+                audioConverter: audioConverter,
+                continuation: continuation
+            )
+        )
 
         let analyzer = SpeechAnalyzer(modules: [transcriber])
         try await analyzer.prepareToAnalyze(in: analyzerFormat)
@@ -293,7 +295,30 @@ final class SpeechRecognitionService {
         await audioSession.deactivate()
     }
 
-    static func computeAmplitude(buffer: AVAudioPCMBuffer) -> Double {
+    /// The tap block must be CREATED in a nonisolated context: with
+    /// SWIFT_DEFAULT_ACTOR_ISOLATION = MainActor, a closure literal inherits
+    /// the isolation of the function it is written in. A literal written in the
+    /// @MainActor `setupPipeline` stays MainActor-isolated even when its body
+    /// only calls nonisolated code — and AVFAudio invokes it on its
+    /// RealtimeMessenger queue ("This callback may be invoked on a thread
+    /// other than the main thread" — AVAudioNode.h), tripping
+    /// `_swift_task_checkIsolatedSwift` → dispatch_assert_queue_fail.
+    /// Real-time thread: no allocation, no blocking lock, no Task.
+    private nonisolated static func makeTapBlock(
+        audioRecorder: AttemptAudioRecorder,
+        meter: AudioLevelMeter,
+        audioConverter: AudioFormatConverter,
+        continuation: AsyncStream<AnalyzerInput>.Continuation
+    ) -> (AVAudioPCMBuffer, AVAudioTime) -> Void {
+        { buffer, _ in
+            meter.ingest(buffer)
+            audioRecorder.write(buffer)
+            guard let converted = audioConverter.convert(buffer) else { return }
+            continuation.yield(AnalyzerInput(buffer: converted))
+        }
+    }
+
+    nonisolated static func computeAmplitude(buffer: AVAudioPCMBuffer) -> Double {
         let frames = vDSP_Length(buffer.frameLength)
         guard frames > 0 else { return 0 }
 

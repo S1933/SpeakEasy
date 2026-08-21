@@ -9,14 +9,14 @@ import AVFoundation
 /// construction / `reset()` on the main actor, `convert(_:)` on the audio
 /// thread only.
 final class AudioFormatConverter: @unchecked Sendable {
-    private let converter: AVAudioConverter
-    private let outputFormat: AVAudioFormat
-    private let ratio: Double
+    nonisolated(unsafe) private let converter: AVAudioConverter
+    nonisolated(unsafe) private let outputFormat: AVAudioFormat
+    nonisolated(unsafe) private let ratio: Double
 
     /// Output buffer reused — avoids one allocation per callback.
-    private var scratch: AVAudioPCMBuffer
+    nonisolated(unsafe) private var scratch: AVAudioPCMBuffer
 
-    init?(from input: AVAudioFormat, to output: AVAudioFormat, maxInputFrames: AVAudioFrameCount = 8192) {
+    nonisolated init?(from input: AVAudioFormat, to output: AVAudioFormat, maxInputFrames: AVAudioFrameCount = 8192) {
         guard let converter = AVAudioConverter(from: input, to: output) else { return nil }
         self.ratio = output.sampleRate / input.sampleRate
         let capacity = AVAudioFrameCount(Double(maxInputFrames) * ratio) + 64
@@ -31,7 +31,7 @@ final class AudioFormatConverter: @unchecked Sendable {
     /// - Returns: a buffer **owned by the converter**. Consume it
     ///   immediately (here: yield into the AsyncStream, which copies it
     ///   via AnalyzerInput). Do not retain a reference.
-    func convert(_ input: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
+    nonisolated func convert(_ input: AVAudioPCMBuffer) -> AVAudioPCMBuffer? {
         let needed = AVAudioFrameCount(Double(input.frameLength) * ratio) + 64
         if scratch.frameCapacity < needed {
             guard let bigger = AVAudioPCMBuffer(pcmFormat: outputFormat, frameCapacity: needed) else { return nil }
@@ -67,5 +67,5 @@ final class AudioFormatConverter: @unchecked Sendable {
     }
 
     /// Call between two recordings to start from a clean state.
-    func reset() { converter.reset() }
+    nonisolated func reset() { converter.reset() }
 }

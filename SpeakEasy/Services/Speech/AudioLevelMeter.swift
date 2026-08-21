@@ -15,7 +15,7 @@ final class AudioLevelMeter: Sendable {
 
     /// Called from the audio thread. Exponential smoothing: fast attack,
     /// slow release — the behavior of a physical VU meter.
-    func ingest(_ buffer: AVAudioPCMBuffer) {
+    nonisolated func ingest(_ buffer: AVAudioPCMBuffer) {
         let raw = SpeechRecognitionService.computeAmplitude(buffer: buffer)
         state.withLock { s in
             let alpha = raw > s.level ? 0.6 : 0.15

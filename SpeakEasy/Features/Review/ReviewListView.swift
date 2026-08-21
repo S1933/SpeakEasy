@@ -3,10 +3,14 @@ import SwiftData
 
 struct ReviewListView: View {
     // Same definition of "difficult" as ProgressQueries/SessionPlanner (#12).
-    private static let difficultPredicate = #Predicate<SentenceProgress> {
-        $0.attempts >= ProgressRules.difficultMinimumAttempts
-            && $0.bestScore < ProgressRules.masteryScore
-    }
+    // #Predicate can't reference static type members directly — capture to locals first.
+    private static let difficultPredicate: Predicate<SentenceProgress> = {
+        let minAttempts = ProgressRules.difficultMinimumAttempts
+        let mastery = ProgressRules.masteryScore
+        return #Predicate<SentenceProgress> {
+            $0.attempts >= minAttempts && $0.bestScore < mastery
+        }
+    }()
 
     @Environment(\.modelContext) private var context
     @Query(filter: ReviewListView.difficultPredicate,

@@ -39,9 +39,9 @@ struct SpeakEasyApp: App {
         // We ARCHIVE rather than delete (recoverable via support), including
         // the WAL/SHM journals which would render the store unreadable again
         // if left next to a recreated store.
-        if let url = config.url, FileManager.default.fileExists(atPath: url.path) {
-            archiveStore(at: url, timestamp: Int(Date.now.timeIntervalSince1970))
-            Log.data.fault("Store archived to \(url.lastPathComponent, privacy: .public)")
+        if FileManager.default.fileExists(atPath: config.url.path) {
+            archiveStore(at: config.url, timestamp: Int(Date.now.timeIntervalSince1970))
+            Log.data.fault("Store archived to \(config.url.lastPathComponent, privacy: .public)")
             if let c = try? ModelContainer(for: schema, configurations: config) {
                 return (c, .recoveredFromCorruption)
             }

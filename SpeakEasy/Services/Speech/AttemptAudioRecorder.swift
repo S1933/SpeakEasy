@@ -6,10 +6,10 @@ import Foundation
 /// analysis. AVAudioFile writes are asynchronous internally; calling it
 /// from the audio thread is the one recommended by Apple.
 final class AttemptAudioRecorder: @unchecked Sendable {
-    private var file: AVAudioFile?
-    private(set) var url: URL?
+    nonisolated(unsafe) private var file: AVAudioFile?
+    nonisolated(unsafe) private(set) var url: URL?
 
-    func begin(format: AVAudioFormat) {
+    nonisolated func begin(format: AVAudioFormat) {
         let url = URL.temporaryDirectory.appending(path: "attempt-\(UUID().uuidString).caf")
         do {
             file = try AVAudioFile(forWriting: url, settings: format.settings)
@@ -20,14 +20,14 @@ final class AttemptAudioRecorder: @unchecked Sendable {
     }
 
     /// Called from the audio thread.
-    func write(_ buffer: AVAudioPCMBuffer) {
+    nonisolated func write(_ buffer: AVAudioPCMBuffer) {
         guard let file else { return }
         do { try file.write(from: buffer) }
         catch { Log.audio.error("Write: \(error, privacy: .public)") }
     }
 
     /// Closes the file and returns its URL. The caller is responsible for cleanup.
-    func finish() -> URL? {
+    nonisolated func finish() -> URL? {
         file = nil
         defer { url = nil }
         return url

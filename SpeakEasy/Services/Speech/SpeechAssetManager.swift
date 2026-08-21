@@ -42,7 +42,13 @@ final class SpeechAssetManager {
 
             state = .downloading(progress: 0)
             progressObservation = request.progress.observe(\.fractionCompleted) { [weak self] progress, _ in
-                Task { @MainActor in self?.state = .downloading(progress: progress.fractionCompleted) }
+                // KVO callback runs off-main. Hop back to the actor before
+                // touching `state` (which is @MainActor-isolated). The closure
+                // itself must stay @Sendable and free of implicit `self`.
+                let fraction = progress.fractionCompleted
+                Task { @MainActor [weak self] in
+                    self?.state = .downloading(progress: fraction)
+                }
             }
 
             try await request.downloadAndInstall()
