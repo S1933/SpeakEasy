@@ -26,12 +26,14 @@ final class PracticeViewModel {
     private(set) var sessionAttempts: [(LearningSentence, AttemptResult)] = []
 
     private let playback: SpeechPlaybackService
-    let recognition: SpeechRecognitionService
+    let recognition: any SpeechRecognizing
     private let scoring: SentenceScoringService
     private let feedback: FeedbackService
     private let recordAttempt: @MainActor (Int, Int) -> Void
     let onSessionComplete: ([AttemptResult], [LearningSentence]) -> Void
     private var timeoutTask: Task<Void, Never>?
+    private var interruptionMonitor: AudioInterruptionMonitor?
+    private var isTransitioning = false
 
     let maxRecordingDuration: TimeInterval
 
@@ -57,7 +59,7 @@ final class PracticeViewModel {
     init(
         queue: [LearningSentence],
         playback: SpeechPlaybackService,
-        recognition: SpeechRecognitionService = SpeechRecognitionService(),
+        recognition: any SpeechRecognizing = SpeechRecognitionService(),
         scoring: SentenceScoringService = SentenceScoringService(),
         feedback: FeedbackService = FeedbackService(),
         recordAttempt: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
@@ -84,6 +86,9 @@ final class PracticeViewModel {
     }
 
     func toggleRecording() async {
+        guard !isTransitioning else { return }
+        isTransitioning = true
+        defer { isTransitioning = false }
         switch phase {
         case .ready, .error:
             await beginRecording()
@@ -186,6 +191,32 @@ final class PracticeViewModel {
         timeoutTask?.cancel(); timeoutTask = nil
         playback.stop()
         await recognition.cancel()
+    }
+
+    /// À appeler depuis `onAppear` — abonne le VM aux interruptions audio.
+    func onAppear() {
+        interruptionMonitor = AudioInterruptionMonitor { [weak self] event in
+            guard let self else { return }
+            switch event {
+            case .interrupted, .routeLost:
+                guard self.phase == .recording else { return }
+                self.timeoutTask?.cancel()
+                Task { await self.recognition.cancel() }
+                Haptics.notify(.warning)
+                self.phase = .error(.audioInterruption)   // le case mort devient vivant
+            case .resumable:
+                break   // on ne relance pas automatiquement : l'utilisateur décide
+            }
+        }
+    }
+
+    /// Passe en arrière-plan pendant l'enregistrement → on coupe proprement.
+    func handleBackgrounding() {
+        guard phase == .recording else { return }
+        timeoutTask?.cancel()
+        Task { await recognition.cancel() }
+        Haptics.notify(.warning)
+        phase = .error(.audioInterruption)
     }
 
     private func finalizeSession() {

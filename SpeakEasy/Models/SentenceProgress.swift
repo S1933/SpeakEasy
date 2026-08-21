@@ -13,6 +13,11 @@ final class SentenceProgress {
     var isCompleted: Bool
     var isFavorite: Bool
 
+    // Champs de planification SM-2 (utilisés en S4.5)
+    var dueDate: Date?
+    var easeFactor: Double
+    var interval: Double
+
     init(
         sentenceID: Int,
         attempts: Int = 0,
@@ -20,7 +25,10 @@ final class SentenceProgress {
         latestScore: Int = 0,
         lastPracticedAt: Date? = nil,
         isCompleted: Bool = false,
-        isFavorite: Bool = false
+        isFavorite: Bool = false,
+        dueDate: Date? = nil,
+        easeFactor: Double = 2.5,
+        interval: Double = 1.0
     ) {
         self.sentenceID = sentenceID
         self.attempts = attempts
@@ -29,5 +37,8 @@ final class SentenceProgress {
         self.lastPracticedAt = lastPracticedAt
         self.isCompleted = isCompleted
         self.isFavorite = isFavorite
+        self.dueDate = dueDate
+        self.easeFactor = easeFactor
+        self.interval = interval
     }
 }
