@@ -24,31 +24,24 @@ struct SpeakEasyApp: App {
     }
 
     private static func makeContainer() -> (ModelContainer, StoreHealth) {
-        let schema = Schema(versionedSchema: SpeakEasySchemaV2.self)
+        let schema = Schema([SentenceProgress.self, AppSettings.self, DailyActivity.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
-        // Palier 1 — nominal, avec plan de migration.
-        var openError: (any Error)?
+        // Palier 1 — nominal.
         do {
-            let c = try ModelContainer(for: schema,
-                                       migrationPlan: SpeakEasyMigrationPlan.self,
-                                       configurations: config)
+            let c = try ModelContainer(for: schema, configurations: config)
             return (c, .healthy)
         } catch {
-            openError = error
             Log.data.error("Ouverture du store impossible: \(error, privacy: .public)")
         }
 
         // Palier 2 — store illisible : on le met de côté et on repart à neuf.
-        // On ARCHIVE plutôt que de supprimer : récupérable via support.
-        if let url = config.url as URL?, FileManager.default.fileExists(atPath: url.path) {
-            let isLegacyPreV1 = (openError as NSError?)?.localizedDescription.contains("unknown model version") ?? false
-            let suffix = isLegacyPreV1
-                ? "legacy-preV1-\(Int(Date.now.timeIntervalSince1970))"
-                : "corrupt-\(Int(Date.now.timeIntervalSince1970))"
-            let backup = url.appendingPathExtension(suffix)
-            try? FileManager.default.moveItem(at: url, to: backup)
-            Log.data.fault("Store archivé vers \(backup.lastPathComponent, privacy: .public)")
+        // On ARCHIVE plutôt que de supprimer (récupérable via support), en
+        // incluant les journaux WAL/SHM qui rendraient le store à nouveau
+        // illisible s'ils étaient laissés à côté d'un store recréé.
+        if let url = config.url, FileManager.default.fileExists(atPath: url.path) {
+            archiveStore(at: url, timestamp: Int(Date.now.timeIntervalSince1970))
+            Log.data.fault("Store archivé vers \(url.lastPathComponent, privacy: .public)")
             if let c = try? ModelContainer(for: schema, configurations: config) {
                 return (c, .recoveredFromCorruption)
             }
@@ -59,6 +52,18 @@ struct SpeakEasyApp: App {
         let c = try! ModelContainer(for: schema, configurations: memory)
         Log.data.fault("Bascule en stockage éphémère")
         return (c, .ephemeral)
+    }
+
+    /// Archive le store et ses journaux WAL/SHM sous un suffixe horodaté, pour
+    /// permettre une récupération manuelle si besoin. Ne supprime jamais.
+    private static func archiveStore(at url: URL, timestamp: Int) {
+        let archive = url.appendingPathExtension("corrupt-\(timestamp)")  // default.store.corrupt-<ts>
+        for (sidecar, archived) in [("", ""), ("-wal", "-wal"), ("-shm", "-shm")] {
+            let src = URL(fileURLWithPath: url.path + sidecar)
+            guard FileManager.default.fileExists(atPath: src.path) else { continue }
+            let destination = URL(fileURLWithPath: archive.path + archived)
+            try? FileManager.default.moveItem(at: src, to: destination)
+        }
     }
 
     var body: some Scene {
