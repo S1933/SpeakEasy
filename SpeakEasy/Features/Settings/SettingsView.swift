@@ -5,6 +5,7 @@ struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
     @Query private var settingsList: [AppSettings]
+    @State private var settings: AppSettings?
     @State private var showingResetConfirmation = false
 
     var body: some View {
@@ -44,6 +45,11 @@ struct SettingsView: View {
                 Button("Done") { dismiss() }
             }
         }
+        .task {
+            if settings == nil {
+                settings = AppSettings.current(in: modelContext)
+            }
+        }
         .confirmationDialog(
             "Reset all progress?",
             isPresented: $showingResetConfirmation,
@@ -56,19 +62,12 @@ struct SettingsView: View {
         }
     }
 
-    private var settings: AppSettings {
-        if let existing = settingsList.first { return existing }
-        let new = AppSettings()
-        modelContext.insert(new)
-        try? modelContext.save()
-        return new
-    }
-
     private var voiceBinding: Binding<VoiceOption> {
         Binding(
-            get: { VoiceOption(rawValue: settings.voiceLocale) ?? .enUS },
-            set: {
-                settings.voiceLocale = $0.rawValue
+            get: { VoiceOption(rawValue: settings?.voiceLocale ?? "en-US") ?? .enUS },
+            set: { newValue in
+                guard let settings else { return }
+                settings.voiceLocale = newValue.rawValue
                 try? modelContext.save()
             }
         )
@@ -76,9 +75,10 @@ struct SettingsView: View {
 
     private var sessionBinding: Binding<SessionSizeOption> {
         Binding(
-            get: { SessionSizeOption(rawValue: settings.sessionSize) ?? .ten },
-            set: {
-                settings.sessionSize = $0.rawValue
+            get: { SessionSizeOption(rawValue: settings?.sessionSize ?? 10) ?? .ten },
+            set: { newValue in
+                guard let settings else { return }
+                settings.sessionSize = newValue.rawValue
                 try? modelContext.save()
             }
         )

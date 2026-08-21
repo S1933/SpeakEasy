@@ -20,6 +20,10 @@ struct SpeakEasyApp: App {
         WindowGroup {
             HomeView()
                 .environment(playback)
+                .task {
+                    let settings = AppSettings.current(in: container.mainContext)
+                    playback.localeIdentifier = settings.voiceLocale
+                }
         }
         .modelContainer(container)
     }
