@@ -14,6 +14,7 @@ struct HomeView: View {
     @State var path = NavigationPath()
     @State var sessionResults: SessionResults?
     @State private var stats = HomeStats()
+    @State private var selectedMode: PracticeMode = .repeatAfter
 
     struct SessionResults: Identifiable {
         let id = UUID()
@@ -47,6 +48,8 @@ struct HomeView: View {
 
                 statsCard
 
+                modePicker
+
                 ctas
 
                 Spacer(minLength: 0)
@@ -69,6 +72,7 @@ struct HomeView: View {
                         queue: queue,
                         playback: playback,
                         localeIdentifier: settings?.voiceLocale ?? "en-US",
+                        mode: selectedMode,
                         recordAttempt: { id, score in
                             ProgressService(context: context)
                                 .recordAttempt(sentenceID: id, score: score)
@@ -96,7 +100,33 @@ struct HomeView: View {
                     SettingsView()
                 }
             }
-            .task(id: path.count) { await refreshStats() }
+            .task(id: path.count) {
+                await refreshStats()
+                selectedMode = PracticeMode(rawValue: settings?.preferredMode ?? "") ?? .repeatAfter
+            }
+            .onChange(of: selectedMode) { _, newMode in
+                if let settings {
+                    settings.preferredMode = newMode.rawValue
+                    try? context.save()
+                }
+            }
+        }
+    }
+
+    private var modePicker: some View {
+        VStack(spacing: 8) {
+            Picker("Practice mode", selection: $selectedMode) {
+                ForEach(PracticeMode.allCases) { mode in
+                    Text(mode.title).tag(mode)
+                }
+            }
+            .pickerStyle(.segmented)
+            .accessibilityLabel("Practice mode")
+
+            Text(selectedMode.subtitle)
+                .font(.caption)
+                .foregroundStyle(.secondary)
+                .frame(maxWidth: .infinity, alignment: .center)
         }
     }
 

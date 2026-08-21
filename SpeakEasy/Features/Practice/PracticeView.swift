@@ -12,6 +12,7 @@ struct PracticeView: View {
         queue: [LearningSentence],
         playback: SpeechPlaybackService,
         localeIdentifier: String = "en-US",
+        mode: PracticeMode = .repeatAfter,
         recordAttempt: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
         onSessionComplete: @escaping ([AttemptResult], [LearningSentence]) -> Void = { _, _ in }
     ) {
@@ -21,6 +22,7 @@ struct PracticeView: View {
             playback: playback,
             recognition: recognition,
             recordAttempt: recordAttempt,
+            mode: mode,
             onSessionComplete: onSessionComplete
         ))
     }
@@ -72,8 +74,11 @@ struct PracticeView: View {
             ReadyContent(
                 sentence: sentence,
                 progressText: viewModel.progressText,
+                mode: viewModel.mode,
+                isRevealed: viewModel.isAnswerRevealed,
                 isSpeaking: playback.isSpeaking,
                 onListen: viewModel.speakCurrent,
+                onReveal: viewModel.revealAnswer,
                 onRecord: { Task { await viewModel.toggleRecording() } }
             )
         case .recording:

@@ -4,8 +4,11 @@ import UIKit
 struct ReadyContent: View {
     let sentence: LearningSentence
     let progressText: String
+    let mode: PracticeMode
+    let isRevealed: Bool
     let isSpeaking: Bool
     let onListen: () -> Void
+    let onReveal: () -> Void
     let onRecord: () -> Void
 
     var body: some View {
@@ -17,7 +20,8 @@ struct ReadyContent: View {
 
             Spacer(minLength: 8)
 
-            SentenceRow(sentence: sentence)
+            SentenceRow(sentence: sentence, mode: mode,
+                        isRevealed: isRevealed, onReveal: onReveal)
 
             Spacer(minLength: 8)
 

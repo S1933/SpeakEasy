@@ -3,7 +3,7 @@ import SwiftUI
 struct ResultContent: View {
     let progressText: String
     let result: AttemptResult
-    let feedback: String
+    let feedback: FeedbackService.Feedback
     let retryTitle: String
     let nextTitle: String
     let onRetry: () -> Void
@@ -42,11 +42,24 @@ struct ResultContent: View {
             .padding(12)
             .background(.regularMaterial, in: RoundedRectangle(cornerRadius: 12))
 
-            Text(feedback)
-                .font(.subheadline)
-                .multilineTextAlignment(.center)
-                .foregroundStyle(.secondary)
-                .frame(maxWidth: .infinity, alignment: .leading)
+            VStack(alignment: .leading, spacing: 4) {
+                Text(feedback.headline)
+                    .font(.subheadline.weight(.semibold))
+                    .frame(maxWidth: .infinity, alignment: .leading)
+                if let detail = feedback.detail {
+                    Text(detail)
+                        .font(.subheadline)
+                        .foregroundStyle(.secondary)
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+                if let tip = feedback.tip {
+                    Text(tip)
+                        .font(.caption)
+                        .foregroundStyle(.secondary)
+                        .italic()
+                        .frame(maxWidth: .infinity, alignment: .leading)
+                }
+            }
 
             Spacer(minLength: 0)
 
@@ -132,6 +145,8 @@ struct TokenResultRow: View {
         switch token.status {
         case .correct:
             return (.clear, .secondary.opacity(0.3), .primary)
+        case .nearMiss:
+            return (.yellow.opacity(0.2), .yellow.opacity(0.7), .yellow)
         case .missing:
             return (.red.opacity(0.15), .red.opacity(0.6), .red)
         case .incorrect:
@@ -144,6 +159,7 @@ struct TokenResultRow: View {
     private func accessibilityLabel(for token: TokenResult) -> String {
         switch token.status {
         case .correct: return "\(token.text), correct"
+        case .nearMiss(let actual, _): return "\(token.text), close, you said \(actual)"
         case .missing: return "\(token.text), missing"
         case .incorrect(let actual): return "\(token.text), you said \(actual)"
         case .extra: return "\(token.text), extra"

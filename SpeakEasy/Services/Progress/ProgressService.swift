@@ -19,7 +19,9 @@ final class ProgressService {
         progress.bestScore = max(progress.bestScore, score)
         progress.lastPracticedAt = date
         progress.isCompleted = progress.bestScore >= 85
-        // ReviewScheduler.apply(score: score, to: progress, on: date)   // S4.5
+        progress.recentScores.append(score)
+        if progress.recentScores.count > 20 { progress.recentScores.removeFirst() }
+        ReviewScheduler.apply(score: score, to: progress, on: date)
 
         let day = Calendar.current.startOfDay(for: date)
         let activity = fetchOrCreateActivity(day: day)

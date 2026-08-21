@@ -36,6 +36,10 @@ final class PracticeViewModel {
     private var isTransitioning = false
 
     let maxRecordingDuration: TimeInterval
+    let mode: PracticeMode
+
+    /// L'utilisateur a-t-il révélé la réponse de la phrase courante ? (S4.1)
+    private(set) var isAnswerRevealed = false
 
     var currentSentence: LearningSentence? {
         queue.indices.contains(queueIndex) ? queue[queueIndex] : nil
@@ -64,6 +68,7 @@ final class PracticeViewModel {
         feedback: FeedbackService = FeedbackService(),
         recordAttempt: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
         maxRecordingDuration: TimeInterval = 15,
+        mode: PracticeMode = .repeatAfter,
         onSessionComplete: @escaping ([AttemptResult], [LearningSentence]) -> Void = { _, _ in }
     ) {
         self.queue = queue
@@ -73,6 +78,7 @@ final class PracticeViewModel {
         self.feedback = feedback
         self.recordAttempt = recordAttempt
         self.maxRecordingDuration = maxRecordingDuration
+        self.mode = mode
         self.onSessionComplete = onSessionComplete
     }
 
@@ -83,6 +89,10 @@ final class PracticeViewModel {
 
     func stopPlayback() {
         playback.stop()
+    }
+
+    func revealAnswer() {
+        isAnswerRevealed = true
     }
 
     func toggleRecording() async {
@@ -132,12 +142,13 @@ final class PracticeViewModel {
         return nil
     }
 
-    func feedback(for result: AttemptResult) -> String {
+    func feedback(for result: AttemptResult) -> FeedbackService.Feedback {
         feedback.feedback(for: result)
     }
 
     private func beginRecording() async {
         playback.stop()
+        isAnswerRevealed = false
         phase = .recording
         Haptics.impact(.light)
         do {
@@ -167,9 +178,10 @@ final class PracticeViewModel {
                 phase = .error(.framework("sentence missing"))
                 return
             }
-            let result = scoring.score(expected: sentence.english, transcript: transcript)
+            var result = scoring.score(sentence: sentence, transcript: transcript, mode: mode)
+            result = result.withRevealed(!mode.showsEnglishBeforeRecording && isAnswerRevealed)
             sessionAttempts.append((sentence, result))
-            recordAttempt(sentence.id, result.score)
+            recordAttempt(sentence.id, result.effectiveScore)
             if result.score >= 85 {
                 Haptics.notify(.success)
             } else if result.score >= 50 {
