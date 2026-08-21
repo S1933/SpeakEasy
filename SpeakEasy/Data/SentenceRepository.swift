@@ -11,6 +11,8 @@ struct SentenceRepository: Sendable {
         self.sentences = sentences
     }
 
+    nonisolated static let shared = SentenceRepository()
+
     var all: [LearningSentence] { sentences }
 
     var count: Int { sentences.count }

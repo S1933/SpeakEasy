@@ -49,7 +49,7 @@ struct SentenceScoringService: Sendable {
 
         let tokens = buildTokenResults(
             alignment: alignment,
-            expectedText: tokenizePreservingCase(expected),
+            expectedText: SentenceNormalizer.displayTokens(expected),
             transcript: transcriptTokens
         )
 
@@ -59,14 +59,6 @@ struct SentenceScoringService: Sendable {
             score: score,
             tokens: tokens
         )
-    }
-
-    private func tokenizePreservingCase(_ text: String) -> [String] {
-        let collapsed = text
-            .replacingOccurrences(of: "\\s+", with: " ", options: .regularExpression)
-            .trimmingCharacters(in: .whitespaces)
-        guard !collapsed.isEmpty else { return [] }
-        return collapsed.split(separator: " ").map(String.init)
     }
 
     enum AlignmentOp: Sendable {
