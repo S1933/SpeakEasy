@@ -34,4 +34,10 @@ struct SessionPlannerTests {
         let q = planner.buildQueue(size: 999, progress: [:])
         #expect(q.count == SentenceRepository.shared.count)
     }
+
+    @Test("Aucun id dupliqué dans le catalogue")
+    func uniqueIDs() {
+        let ids = SentenceRepository.shared.all.map(\.id)
+        #expect(Set(ids).count == ids.count)
+    }
 }

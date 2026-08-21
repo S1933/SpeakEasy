@@ -9,11 +9,11 @@ enum HomeRoute: Hashable {
 
 struct HomeView: View {
     @Environment(SpeechPlaybackService.self) var playback
-    @Environment(\.modelContext) private var modelContext
-    @Query var allProgress: [SentenceProgress]
+    @Environment(\.modelContext) private var context
     @Query var settingsList: [AppSettings]
     @State var path = NavigationPath()
     @State var sessionResults: SessionResults?
+    @State private var stats = HomeStats()
 
     struct SessionResults: Identifiable {
         let id = UUID()
@@ -21,14 +21,13 @@ struct HomeView: View {
         let sentences: [LearningSentence]
     }
 
-    private var totalSentences: Int { SentenceRepository().count }
+    struct HomeStats: Equatable {
+        var today = 0, completed = 0, difficult = 0, streak = 0
+    }
+
+    private var totalSentences: Int { SentenceRepository.shared.count }
     private var categories: Int { SentenceCategory.allCases.count }
-
     private var settings: AppSettings? { settingsList.first }
-
-    private var todayCount: Int { ProgressQueries.todayAttemptCount(in: allProgress) }
-    private var completedCount: Int { ProgressQueries.completedCount(in: allProgress) }
-    private var difficultCount: Int { ProgressQueries.difficultCount(in: allProgress) }
 
     var body: some View {
         NavigationStack(path: $path) {
@@ -71,7 +70,7 @@ struct HomeView: View {
                         playback: playback,
                         localeIdentifier: settings?.voiceLocale ?? "en-US",
                         recordAttempt: { id, score in
-                            ProgressService(context: modelContext)
+                            ProgressService(context: context)
                                 .recordAttempt(sentenceID: id, score: score)
                         },
                         onSessionComplete: { results, sentences in
@@ -97,14 +96,16 @@ struct HomeView: View {
                     SettingsView()
                 }
             }
+            .task(id: path.count) { await refreshStats() }
         }
     }
 
     private var statsCard: some View {
         VStack(alignment: .leading, spacing: 12) {
-            statRow("Today", "\(todayCount) practiced")
-            statRow("Progress", "\(completedCount) / \(totalSentences)")
-            statRow("Difficult", "\(difficultCount) to review")
+            statRow("Today", "\(stats.today) practiced")
+            statRow("Progress", "\(stats.completed) / \(totalSentences)")
+            statRow("Difficult", "\(stats.difficult) to review")
+            if stats.streak > 1 { statRow("Streak", "\(stats.streak) days") }
         }
         .padding(16)
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -119,6 +120,15 @@ struct HomeView: View {
             Spacer()
             Text(value).font(.body)
         }
+    }
+
+    private func refreshStats() async {
+        stats = HomeStats(
+            today: ProgressQueries.todayAttemptCount(in: context),
+            completed: ProgressQueries.completedCount(in: context),
+            difficult: ProgressQueries.difficultCount(in: context),
+            streak: ProgressQueries.currentStreak(in: context)
+        )
     }
 
     private var ctas: some View {
@@ -140,12 +150,10 @@ struct HomeView: View {
         }
     }
 
-    private var primaryCTATitle: String {
-        if allProgress.isEmpty { return "Start practicing" }
-        return "Start practicing"
-    }
+    private var primaryCTATitle: String { "Start practicing" }
 
     private func buildPracticeQueue() -> [LearningSentence] {
+        let allProgress = (try? context.fetch(FetchDescriptor<SentenceProgress>())) ?? []
         let snapshots = Dictionary(
             uniqueKeysWithValues: allProgress.map {
                 ($0.sentenceID, SessionPlanner.Snapshot(
@@ -167,5 +175,5 @@ struct HomeView: View {
 #Preview {
     HomeView()
         .environment(SpeechPlaybackService())
-        .modelContainer(for: [SentenceProgress.self, AppSettings.self], inMemory: true)
+        .modelContainer(for: [SentenceProgress.self, AppSettings.self, DailyActivity.self], inMemory: true)
 }

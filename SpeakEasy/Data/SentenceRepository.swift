@@ -1,38 +1,52 @@
 import Foundation
 
 struct SentenceRepository: Sendable {
-    private let sentences: [LearningSentence]
-
-    nonisolated init() {
-        self.sentences = SentenceRepository.loadBundled()
-    }
-
-    nonisolated init(sentences: [LearningSentence]) {
-        self.sentences = sentences
-    }
-
+    /// Le catalogue est immuable et embarqué : une seule lecture par process.
     nonisolated static let shared = SentenceRepository()
 
-    var all: [LearningSentence] { sentences }
+    private let sentences: [LearningSentence]
+    private let byID: [Int: LearningSentence]
+    private let byCategory: [SentenceCategory: [LearningSentence]]
 
-    var count: Int { sentences.count }
-
-    func sentence(at index: Int) -> LearningSentence? {
-        guard sentences.indices.contains(index) else { return nil }
-        return sentences[index]
+    private init() {
+        let loaded = Self.loadBundled()
+        self.sentences = loaded
+        self.byID = Dictionary(uniqueKeysWithValues: loaded.map { ($0.id, $0) })
+        self.byCategory = Dictionary(grouping: loaded, by: \.category)
     }
 
-    private nonisolated static func loadBundled() -> [LearningSentence] {
+    /// Init d'injection — réservé aux tests.
+    init(sentences: [LearningSentence]) {
+        self.sentences = sentences
+        self.byID = Dictionary(loaded: sentences)
+        self.byCategory = Dictionary(grouping: sentences, by: \.category)
+    }
+
+    var all: [LearningSentence] { sentences }
+    var count: Int { sentences.count }
+
+    func sentence(id: Int) -> LearningSentence? { byID[id] }
+    func sentences(in category: SentenceCategory) -> [LearningSentence] { byCategory[category] ?? [] }
+
+    private static func loadBundled() -> [LearningSentence] {
         guard let url = Bundle.main.url(forResource: "sentences", withExtension: "json") else {
+            Log.data.fault("sentences.json absent du bundle")
             assertionFailure("sentences.json missing from bundle")
             return []
         }
         do {
-            let data = try Data(contentsOf: url)
-            return try JSONDecoder().decode([LearningSentence].self, from: data)
+            return try JSONDecoder().decode([LearningSentence].self, from: Data(contentsOf: url))
         } catch {
+            Log.data.fault("Décodage sentences.json: \(error, privacy: .public)")
             assertionFailure("Failed to decode sentences.json: \(error)")
             return []
         }
+    }
+}
+
+private extension Dictionary where Key == Int, Value == LearningSentence {
+    /// Tolère les doublons d'id en test (garde le premier) plutôt que de crasher.
+    init(loaded: [LearningSentence]) {
+        self = Dictionary(loaded.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 }

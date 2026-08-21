@@ -86,6 +86,7 @@ struct SettingsView: View {
 
     private func reset() {
         try? modelContext.delete(model: SentenceProgress.self)
+        try? modelContext.delete(model: DailyActivity.self)
         try? modelContext.save()
     }
 
@@ -101,5 +102,5 @@ struct SettingsView: View {
     NavigationStack {
         SettingsView()
     }
-    .modelContainer(for: [SentenceProgress.self, AppSettings.self], inMemory: true)
+    .modelContainer(for: [SentenceProgress.self, AppSettings.self, DailyActivity.self], inMemory: true)
 }

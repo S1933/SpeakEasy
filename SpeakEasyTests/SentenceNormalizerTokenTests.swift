@@ -23,7 +23,7 @@ struct SentenceNormalizerTokenTests {
 
     /// Contrat structurel : sans lui, buildTokenResults peut crasher.
     @Test("displayTokens et tokenize ont toujours la même cardinalité",
-          arguments: SentenceRepository().all)
+          arguments: SentenceRepository.shared.all)
     func cardinalityInvariant(sentence: LearningSentence) {
         #expect(SentenceNormalizer.displayTokens(sentence.english).count
                 == SentenceNormalizer.tokenize(sentence.english).count)
@@ -34,7 +34,7 @@ struct SentenceNormalizerTokenTests {
     @Test("Les phrases à virgule scorent 100 % sur un transcript sans ponctuation")
     func commaSentencesScorePerfect() {
         let service = SentenceScoringService()
-        for sentence in SentenceRepository().all where sentence.english.contains(",") {
+        for sentence in SentenceRepository.shared.all where sentence.english.contains(",") {
             let transcript = sentence.english.replacingOccurrences(of: ",", with: "")
             let r = service.score(expected: sentence.english, transcript: transcript)
             #expect(r.score == 100, "Attendu 100 pour '\(sentence.english)'")

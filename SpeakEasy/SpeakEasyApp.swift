@@ -9,7 +9,7 @@ struct SpeakEasyApp: App {
     init() {
         do {
             container = try ModelContainer(
-                for: SentenceProgress.self, AppSettings.self
+                for: SentenceProgress.self, AppSettings.self, DailyActivity.self
             )
         } catch {
             fatalError("Failed to set up SwiftData container: \(error)")
