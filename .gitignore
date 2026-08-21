@@ -12,7 +12,8 @@ DerivedData/
 xcuserdata/
 *.xccheckout
 *.xcscmblueprint
-*.xcscheme
+# Les schemes partagés DOIVENT être versionnés :
+xcuserdata/**/*.xcscheme
 
 # Swift Package Manager
 .swiftpm/
