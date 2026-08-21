@@ -180,6 +180,7 @@ final class PracticeViewModel {
             }
             var result = scoring.score(sentence: sentence, transcript: transcript, mode: mode)
             result = result.withRevealed(!mode.showsEnglishBeforeRecording && isAnswerRevealed)
+            result = result.withRecordingURL(recognition.recordingURL)
             sessionAttempts.append((sentence, result))
             recordAttempt(sentence.id, result.effectiveScore)
             if result.score >= 85 {
@@ -236,5 +237,6 @@ final class PracticeViewModel {
         let sentences = sessionAttempts.map(\.0)
         sessionAttempts.removeAll()
         onSessionComplete(attempts, sentences)
+        AttemptAudioRecorder.purgeTemporary()
     }
 }

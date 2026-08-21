@@ -47,7 +47,12 @@ struct RecordingContent: View {
     let elapsed: TimeInterval
     let meter: AudioLevelMeter
     let isActive: Bool
+    let finalized: String
+    let volatile: String
     let onStop: () -> Void
+
+    @ScaledMetric(relativeTo: .largeTitle) private var timerSize: CGFloat = 48
+    @Environment(\.accessibilityVoiceOverEnabled) private var voiceOverEnabled
 
     var body: some View {
         VStack(spacing: 24) {
@@ -67,11 +72,16 @@ struct RecordingContent: View {
 
             VStack(spacing: 20) {
                 Text(elapsedString)
-                    .font(.system(size: 48, weight: .light, design: .rounded))
-                    .monospacedDigit()
-                    .accessibilityLabel("Elapsed time \(Int(elapsed)) seconds")
+                                    .font(.system(size: timerSize, weight: .light, design: .rounded))
+                                    .monospacedDigit()
+                                    .accessibilityLabel("Elapsed time \(Int(elapsed)) seconds")
 
-                WaveformView(meter: meter, isActive: isActive)
+                                // Transcript en direct — coupé lorsque VoiceOver lit déjà l'écran.
+                                if !voiceOverEnabled {
+                                    LiveTranscriptView(finalized: finalized, volatile: volatile)
+                                }
+
+                                WaveformView(meter: meter, isActive: isActive)
 
                 MicrophoneButton(state: .recording, action: onStop)
 
@@ -160,21 +170,13 @@ struct ErrorContent: View {
                         openSettings()
                     } label: {
                         Text("Open Settings")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(.tint, in: RoundedRectangle(cornerRadius: 12))
-                            .foregroundStyle(.white)
                     }
+                    .buttonStyle(PrimaryButtonStyle())
                 } else {
                     Button(action: onRetry) {
                         Text("Try again")
-                            .font(.headline)
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 12)
-                            .background(.tint, in: RoundedRectangle(cornerRadius: 12))
-                            .foregroundStyle(.white)
                     }
+                    .buttonStyle(PrimaryButtonStyle())
                 }
 
                 Button(action: onDismiss) {
@@ -191,7 +193,7 @@ struct ErrorContent: View {
         switch error {
         case .microphoneDenied, .speechDenied:
             return "mic.slash.fill"
-        case .noSpeech, .emptyTranscript:
+        case .noSpeech:
             return "waveform.slash"
         default:
             return "exclamationmark.triangle"

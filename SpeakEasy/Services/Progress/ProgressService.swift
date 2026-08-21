@@ -38,6 +38,7 @@ final class ProgressService {
         try? context.delete(model: SentenceProgress.self)
         try? context.delete(model: DailyActivity.self)
         try? context.save()
+        AttemptAudioRecorder.purgeTemporary()
     }
 
     private func fetchOrCreate(sentenceID: Int) -> SentenceProgress {

@@ -1,12 +1,5 @@
 import Foundation
 
-enum PracticeState: Sendable {
-    case ready
-    case recording
-    case processing
-    case result(AttemptResult)
-}
-
 struct AttemptResult: Sendable, Equatable {
     let expected: String
     let transcript: String
@@ -14,15 +7,19 @@ struct AttemptResult: Sendable, Equatable {
     let tokens: [TokenResult]
     let mode: PracticeMode
     let wasRevealed: Bool
+    /// Enregistrement audio de la tentative (replay A/B, S5.2) — éphémère.
+    let recordingURL: URL?
 
     init(expected: String, transcript: String, score: Int, tokens: [TokenResult],
-         mode: PracticeMode = .repeatAfter, wasRevealed: Bool = false) {
+         mode: PracticeMode = .repeatAfter, wasRevealed: Bool = false,
+         recordingURL: URL? = nil) {
         self.expected = expected
         self.transcript = transcript
         self.score = score
         self.tokens = tokens
         self.mode = mode
         self.wasRevealed = wasRevealed
+        self.recordingURL = recordingURL
     }
 
     /// Score qui compte pour la progression. Une réponse révélée plafonne.
@@ -30,7 +27,14 @@ struct AttemptResult: Sendable, Equatable {
 
     func withRevealed(_ revealed: Bool) -> AttemptResult {
         AttemptResult(expected: expected, transcript: transcript, score: score,
-                      tokens: tokens, mode: mode, wasRevealed: revealed)
+                      tokens: tokens, mode: mode, wasRevealed: revealed,
+                      recordingURL: recordingURL)
+    }
+
+    func withRecordingURL(_ url: URL?) -> AttemptResult {
+        AttemptResult(expected: expected, transcript: transcript, score: score,
+                      tokens: tokens, mode: mode, wasRevealed: wasRevealed,
+                      recordingURL: url)
     }
 }
 

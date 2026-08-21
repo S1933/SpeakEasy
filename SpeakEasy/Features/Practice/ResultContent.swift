@@ -1,6 +1,8 @@
 import SwiftUI
 
 struct ResultContent: View {
+    @ScaledMetric(relativeTo: .largeTitle) private var scoreSize: CGFloat = 56
+
     let progressText: String
     let result: AttemptResult
     let feedback: FeedbackService.Feedback
@@ -22,7 +24,7 @@ struct ResultContent: View {
                 Text(bucket.label)
                     .font(.title2.weight(.semibold))
                 Text("\(result.score)%")
-                    .font(.system(size: 56, weight: .light, design: .rounded))
+                    .font(.system(size: scoreSize, weight: .light, design: .rounded))
                     .monospacedDigit()
             }
             .accessibilityElement(children: .combine)
@@ -74,12 +76,8 @@ struct ResultContent: View {
 
                 Button(action: onNext) {
                     Text(nextTitle)
-                        .font(.headline)
-                        .frame(maxWidth: .infinity)
-                        .padding(.vertical, 12)
-                        .background(.tint, in: RoundedRectangle(cornerRadius: 12))
-                        .foregroundStyle(.white)
                 }
+                .buttonStyle(PrimaryButtonStyle())
             }
         }
     }
@@ -127,32 +125,54 @@ struct TokenResultRow: View {
 
     @ViewBuilder
     private func tokenChip(_ token: TokenResult) -> some View {
-        let style = tokenStyle(token)
-        Text(token.text)
-            .font(.body.weight(.medium))
-            .padding(.horizontal, 10)
-            .padding(.vertical, 6)
-            .background(style.background, in: RoundedRectangle(cornerRadius: 8))
-            .overlay(
-                RoundedRectangle(cornerRadius: 8)
-                    .stroke(style.border, lineWidth: 1)
-            )
-            .foregroundStyle(style.foreground)
-            .accessibilityLabel(accessibilityLabel(for: token))
+        let style = chipStyle(token)
+        HStack(spacing: 4) {
+            if let symbol = style.symbol {
+                Image(systemName: symbol)
+                    .font(.caption2.weight(.bold))
+                    .accessibilityHidden(true)
+            }
+            Text(token.text)
+        }
+        .font(.body.weight(.medium))
+        .padding(.horizontal, 10)
+        .padding(.vertical, 6)
+        .background(style.background, in: RoundedRectangle(cornerRadius: 8))
+        .overlay(
+            RoundedRectangle(cornerRadius: 8)
+                .strokeBorder(style.border, style: StrokeStyle(lineWidth: 1, dash: style.dashed ? [3, 2] : []))
+        )
+        .foregroundStyle(style.foreground)
+        .accessibilityLabel(accessibilityLabel(for: token))
     }
 
-    private func tokenStyle(_ token: TokenResult) -> (background: Color, border: Color, foreground: Color) {
+    private struct ChipStyle {
+        var background: Color
+        var border: Color
+        var foreground: Color
+        var symbol: String?
+        var dashed: Bool
+    }
+
+    /// Cinq états, trois canaux redondants (symbole + trait + couleur) :
+    /// lisible même en niveaux de gris / daltonisme.
+    private func chipStyle(_ token: TokenResult) -> ChipStyle {
         switch token.status {
         case .correct:
-            return (.clear, .secondary.opacity(0.3), .primary)
+            return ChipStyle(background: .clear, border: .secondary.opacity(0.3),
+                             foreground: .primary, symbol: nil, dashed: false)
         case .nearMiss:
-            return (.yellow.opacity(0.2), .yellow.opacity(0.7), .yellow)
+            return ChipStyle(background: .yellow.opacity(0.2), border: .yellow.opacity(0.7),
+                             foreground: .yellow, symbol: "waveform", dashed: false)
         case .missing:
-            return (.red.opacity(0.15), .red.opacity(0.6), .red)
+            return ChipStyle(background: .red.opacity(0.15), border: .red.opacity(0.6),
+                             foreground: .red, symbol: "minus.circle", dashed: true)
         case .incorrect:
-            return (.orange.opacity(0.15), .orange.opacity(0.6), .orange)
+            return ChipStyle(background: .orange.opacity(0.15), border: .orange.opacity(0.6),
+                             foreground: .orange, symbol: "arrow.triangle.swap", dashed: false)
         case .extra:
-            return (.gray.opacity(0.15), .gray.opacity(0.5), .secondary)
+            return ChipStyle(background: .gray.opacity(0.15), border: .gray.opacity(0.5),
+                             foreground: .secondary, symbol: "plus.circle", dashed: true)
         }
     }
 

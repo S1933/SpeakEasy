@@ -3,6 +3,8 @@ import SwiftData
 
 enum HomeRoute: Hashable {
     case practice
+    case focused([LearningSentence])
+    case review
     case summary
     case settings
 }
@@ -67,24 +69,13 @@ struct HomeView: View {
             .navigationDestination(for: HomeRoute.self) { route in
                 switch route {
                 case .practice:
-                    let queue = buildPracticeQueue()
-                    PracticeView(
-                        queue: queue,
-                        playback: playback,
-                        localeIdentifier: settings?.voiceLocale ?? "en-US",
-                        mode: selectedMode,
-                        recordAttempt: { id, score in
-                            ProgressService(context: context)
-                                .recordAttempt(sentenceID: id, score: score)
-                        },
-                        onSessionComplete: { results, sentences in
-                            sessionResults = SessionResults(
-                                attempts: results,
-                                sentences: sentences
-                            )
-                            path.append(HomeRoute.summary)
-                        }
-                    )
+                    makePracticeView(queue: buildPracticeQueue())
+                case .focused(let queue):
+                    makePracticeView(queue: queue)
+                case .review:
+                    ReviewListView { sentences in
+                        path.append(HomeRoute.focused(sentences))
+                    }
                 case .summary:
                     if let results = sessionResults {
                         SessionSummaryView(
@@ -134,7 +125,10 @@ struct HomeView: View {
         VStack(alignment: .leading, spacing: 12) {
             statRow("Today", "\(stats.today) practiced")
             statRow("Progress", "\(stats.completed) / \(totalSentences)")
-            statRow("Difficult", "\(stats.difficult) to review")
+            NavigationLink(value: HomeRoute.review) {
+                statRow("Difficult", "\(stats.difficult) to review")
+            }
+            .buttonStyle(.plain)
             if stats.streak > 1 { statRow("Streak", "\(stats.streak) days") }
         }
         .padding(16)
@@ -165,12 +159,8 @@ struct HomeView: View {
         VStack(spacing: 12) {
             NavigationLink(value: HomeRoute.practice) {
                 Text(primaryCTATitle)
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(.tint, in: RoundedRectangle(cornerRadius: 14))
-                    .foregroundStyle(.white)
             }
+            .buttonStyle(PrimaryButtonStyle())
             .accessibilityLabel(primaryCTATitle)
 
             Text("\(totalSentences) sentences across \(categories) categories")
@@ -181,6 +171,22 @@ struct HomeView: View {
     }
 
     private var primaryCTATitle: String { "Start practicing" }
+
+    private func makePracticeView(queue: [LearningSentence]) -> some View {
+        PracticeView(
+            queue: queue,
+            playback: playback,
+            localeIdentifier: settings?.voiceLocale ?? "en-US",
+            mode: selectedMode,
+            recordAttempt: { id, score in
+                ProgressService(context: context).recordAttempt(sentenceID: id, score: score)
+            },
+            onSessionComplete: { results, sentences in
+                sessionResults = SessionResults(attempts: results, sentences: sentences)
+                path.append(HomeRoute.summary)
+            }
+        )
+    }
 
     private func buildPracticeQueue() -> [LearningSentence] {
         let allProgress = (try? context.fetch(FetchDescriptor<SentenceProgress>())) ?? []

@@ -34,8 +34,12 @@ final class SpeechRecognitionService {
     private var collectionTask: Task<Void, Never>?
     private var timerTask: Task<Void, Never>?
 
+    /// Enregistre l'audition de la tentative courante pour le replay A/B (S5.2).
+    private let audioRecorder = AttemptAudioRecorder()
+    private(set) var recordingURL: URL?
+
     /// Segments définitivement figés, concaténés.
-    private var finalizedTranscript: String = ""
+    private(set) var finalizedTranscript: String = ""
     /// Hypothèse en cours, remplacée à chaque émission.
     private(set) var volatileTranscript: String = ""
     private(set) var streamFailure: Error?
@@ -64,8 +68,8 @@ final class SpeechRecognitionService {
         finalizedTranscript = ""
         volatileTranscript = ""
         streamFailure = nil
+        recordingURL = nil
         elapsed = 0
-        amplitude = 0
         status = .preparing
 
         guard await ensureMicrophone() else {
@@ -119,6 +123,8 @@ final class SpeechRecognitionService {
             status = .idle
             throw RecordingError.framework(streamFailure.localizedDescription)
         }
+
+        recordingURL = audioRecorder.finish()
 
         let transcript = (finalizedTranscript.isEmpty ? volatileTranscript : finalizedTranscript)
             .trimmingCharacters(in: .whitespacesAndNewlines)
@@ -184,6 +190,8 @@ final class SpeechRecognitionService {
 
         let inputFormat = inputNode.outputFormat(forBus: 0)
 
+        audioRecorder.begin(format: inputFormat)
+
         guard let audioConverter = AudioFormatConverter(from: inputFormat, to: analyzerFormat) else {
             throw RecordingError.framework("converter unavailable")
         }
@@ -196,6 +204,7 @@ final class SpeechRecognitionService {
         inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) { buffer, _ in
             // Thread temps réel : aucune allocation, aucun verrou bloquant, aucun Task.
             meter.ingest(buffer)
+            audioRecorder.write(buffer)
             guard let converted = audioConverter.convert(buffer) else { return }
             continuation.yield(AnalyzerInput(buffer: converted))
         }

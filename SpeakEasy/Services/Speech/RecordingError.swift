@@ -7,7 +7,6 @@ enum RecordingError: Error, Sendable, LocalizedError, Equatable {
     case speechDenied
     case assetsUnavailable
     case noSpeech
-    case emptyTranscript
     case audioInterruption
     case framework(String)
 
@@ -19,7 +18,7 @@ enum RecordingError: Error, Sendable, LocalizedError, Equatable {
             return "Speech recognition is disabled."
         case .assetsUnavailable, .framework:
             return "Speech recognition isn't available right now."
-        case .noSpeech, .emptyTranscript:
+        case .noSpeech:
             return "I couldn't hear anything."
         case .audioInterruption:
             return "Recording was interrupted."
@@ -30,7 +29,7 @@ enum RecordingError: Error, Sendable, LocalizedError, Equatable {
         switch self {
         case .microphoneDenied, .speechDenied:
             return "Allow access in Settings to practice speaking."
-        case .noSpeech, .emptyTranscript:
+        case .noSpeech:
             return "Try again and speak a little closer to your iPhone."
         default:
             return "Please try again."

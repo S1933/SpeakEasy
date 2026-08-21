@@ -6,5 +6,18 @@
 	<string>SpeakEasy uses the microphone so you can practice spoken English.</string>
 	<key>NSSpeechRecognitionUsageDescription</key>
 	<string>SpeakEasy uses speech recognition to compare what you say with the practice sentence.</string>
+	<key>ITSAppUsesNonExemptEncryption</key>
+	<false/>
+	<key>CFBundleDevelopmentRegion</key>
+	<string>en</string>
+	<key>CFBundleLocalizations</key>
+	<array>
+		<string>en</string>
+		<string>fr</string>
+	</array>
+	<key>UIRequiredDeviceCapabilities</key>
+	<array>
+		<string>microphone</string>
+	</array>
 </dict>
 </plist>

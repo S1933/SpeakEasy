@@ -88,6 +88,8 @@ struct PracticeView: View {
                 elapsed: viewModel.elapsed,
                 meter: viewModel.meter,
                 isActive: viewModel.phase == .recording,
+                finalized: viewModel.recognition.finalizedTranscript,
+                volatile: viewModel.recognition.volatileTranscript,
                 onStop: { Task { await viewModel.toggleRecording() } }
             )
         case .processing:

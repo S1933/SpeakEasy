@@ -8,6 +8,7 @@ struct SettingsView: View {
     @State private var settings: AppSettings?
     @State private var showingResetConfirmation = false
     @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("dailyReminderEnabled") private var dailyReminderEnabled = false
 
     var body: some View {
         Form {
@@ -33,6 +34,22 @@ struct SettingsView: View {
                 } label: {
                     Text("Reset progress")
                 }
+            }
+
+            Section("Daily reminder") {
+                Toggle("Practise reminder", isOn: $dailyReminderEnabled)
+                    .onChange(of: dailyReminderEnabled) { _, on in
+                        Task {
+                            if on {
+                                var comps = DateComponents()
+                                comps.hour = 18
+                                comps.minute = 0
+                                await NotificationService.requestAndSchedule(at: comps)
+                            } else {
+                                NotificationService.cancel()
+                            }
+                        }
+                    }
             }
 
             Section("About") {
@@ -89,9 +106,7 @@ struct SettingsView: View {
     }
 
     private func reset() {
-        try? modelContext.delete(model: SentenceProgress.self)
-        try? modelContext.delete(model: DailyActivity.self)
-        try? modelContext.save()
+        ProgressService(context: modelContext).resetAll()
     }
 
     private var appVersion: String {

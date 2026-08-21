@@ -36,12 +36,8 @@ struct OnboardingView: View {
 
             Button(action: onReady) {
                 Text("Get started")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(.tint, in: RoundedRectangle(cornerRadius: 14))
-                    .foregroundStyle(.white)
             }
+            .buttonStyle(PrimaryButtonStyle())
             .disabled(!isReady)
         }
         .padding(24)

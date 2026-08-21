@@ -18,6 +18,9 @@ final class FakeRecognizer: SpeechRecognizing {
     private(set) var status: SpeechRecognitionService.Status = .idle
     private(set) var elapsed: TimeInterval = 0
     private(set) var liveTranscript = ""
+    private(set) var finalizedTranscript = ""
+    private(set) var volatileTranscript = ""
+    var recordingURL: URL?
     let meter = AudioLevelMeter()
 
     // Journal d'appels, pour vérifier le cycle de vie.
