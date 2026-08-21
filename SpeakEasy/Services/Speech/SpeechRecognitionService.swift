@@ -28,7 +28,24 @@ final class SpeechRecognitionService {
     private var collectionTask: Task<Void, Never>?
     private var timerTask: Task<Void, Never>?
 
-    private(set) var collectedTranscript: String = ""
+    /// Segments définitivement figés, concaténés.
+    private var finalizedTranscript: String = ""
+    /// Hypothèse en cours, remplacée à chaque émission.
+    private(set) var volatileTranscript: String = ""
+    private(set) var streamFailure: Error?
+
+    /// Ce que l'UI affiche en direct (cf. S5.1).
+    var liveTranscript: String {
+        [finalizedTranscript, volatileTranscript]
+            .filter { !$0.isEmpty }
+            .joined(separator: " ")
+    }
+
+    /// Ce qu'on envoie au scoring après finalisation.
+    private(set) var collectedTranscript: String {
+        get { finalizedTranscript }
+        set { finalizedTranscript = newValue }
+    }
 
     nonisolated init(locale: Locale = Locale(identifier: "en-US"),
                      maxDuration: TimeInterval = 15) {
@@ -38,7 +55,9 @@ final class SpeechRecognitionService {
 
     func startRecording() async throws {
         guard status == .idle || status == .transcribing else { return }
-        collectedTranscript = ""
+        finalizedTranscript = ""
+        volatileTranscript = ""
+        streamFailure = nil
         elapsed = 0
         amplitude = 0
         status = .preparing
@@ -89,9 +108,16 @@ final class SpeechRecognitionService {
         await collectionTask?.value
         collectionTask = nil
 
-        cleanup()
+        if let streamFailure {
+            cleanup()
+            status = .idle
+            throw RecordingError.framework(streamFailure.localizedDescription)
+        }
 
-        let transcript = collectedTranscript.trimmingCharacters(in: .whitespaces)
+        let transcript = (finalizedTranscript.isEmpty ? volatileTranscript : finalizedTranscript)
+            .trimmingCharacters(in: .whitespacesAndNewlines)
+
+        cleanup()
         status = .idle
         guard !transcript.isEmpty else {
             throw RecordingError.noSpeech
@@ -167,19 +193,7 @@ final class SpeechRecognitionService {
         try await analyzer.prepareToAnalyze(in: analyzerFormat)
         self.analyzer = analyzer
 
-        collectionTask = Task { [weak self] in
-            do {
-                let resultStream = transcriber.results
-                for try await result in resultStream {
-                    let text = String(result.text.characters)
-                    await MainActor.run {
-                        self?.collectedTranscript = text
-                    }
-                }
-            } catch {
-                Log.speech.error("Result stream failed: \(error, privacy: .public)")
-            }
-        }
+        startCollecting(from: transcriber)
 
         Task { [analyzer] in
             do {
@@ -190,6 +204,33 @@ final class SpeechRecognitionService {
         }
 
         self.audioEngine = engine
+    }
+
+    private func startCollecting(from transcriber: SpeechTranscriber) {
+        collectionTask = Task { [weak self] in
+            do {
+                for try await result in transcriber.results {
+                    let text = String(result.text.characters)
+                    let isFinal = result.isFinal
+                    await MainActor.run {
+                        guard let self else { return }
+                        if isFinal {
+                            self.finalizedTranscript = self.finalizedTranscript.isEmpty
+                                ? text
+                                : self.finalizedTranscript + " " + text
+                            self.volatileTranscript = ""
+                        } else {
+                            self.volatileTranscript = text
+                        }
+                    }
+                }
+            } catch is CancellationError {
+                // Arrêt normal.
+            } catch {
+                Log.speech.error("Flux de résultats interrompu: \(error, privacy: .public)")
+                await MainActor.run { self?.streamFailure = error }
+            }
+        }
     }
 
     private func startAudioEngine() throws {
@@ -207,15 +248,13 @@ final class SpeechRecognitionService {
     private func startTimer() {
         timerTask = Task { [weak self, maxDuration] in
             let tickInterval: TimeInterval = 0.1
-            let totalTicks = Int(maxDuration / tickInterval)
-            for tick in 1...totalTicks {
+            var tick = 0
+            while !Task.isCancelled {
                 try? await Task.sleep(for: .seconds(tickInterval))
-                guard let self, !Task.isCancelled, self.status == .recording else { return }
+                tick += 1
+                guard let self, self.status == .recording else { return }
                 self.elapsed = Double(tick) * tickInterval
-                if self.elapsed >= maxDuration {
-                    _ = try? await self.stopRecording()
-                    return
-                }
+                if self.elapsed >= maxDuration { return }
             }
         }
     }
