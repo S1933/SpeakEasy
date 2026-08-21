@@ -23,10 +23,12 @@ final class SentenceScoringServiceTests: XCTestCase {
         XCTAssertEqual(r.score, 100)
     }
 
-    func testMissingOneWordScores83() {
+    // Depuis S4.2/S4.6, la pondération (mots fonctionnels) et la normalisation
+    // de longueur changent les scores absolus. Valeurs recomputées.
+    func testMissingOneFunctionWordScores93() {
         let r = service.score(expected: "I need to check the logs",
-                              transcript: "I need check the logs")
-        XCTAssertEqual(r.score, 83)
+                              transcript: "I need check the logs")   // "to" omis (mot fonctionnel)
+        XCTAssertEqual(r.score, 93)
         XCTAssertEqual(r.tokens.count, 6)
         if case .missing = r.tokens[2].status {
             XCTAssertEqual(r.tokens[2].text, "to")
@@ -38,7 +40,7 @@ final class SentenceScoringServiceTests: XCTestCase {
     func testSubstitutionMarksIncorrect() {
         let r = service.score(expected: "I need to check the logs",
                               transcript: "I need to look the logs")
-        XCTAssertEqual(r.score, 83)
+        XCTAssertEqual(r.score, 86)
         if case .incorrect(let actual) = r.tokens[3].status {
             XCTAssertEqual(actual, "look")
         } else {
@@ -49,9 +51,8 @@ final class SentenceScoringServiceTests: XCTestCase {
     func testExtraWordHasLowerPenalty() {
         let r = service.score(expected: "I need to check",
                               transcript: "I really need to check")
-        // weightedErrors = 0.5 (one extra word), expectedCount = 4
-        // score = round((1 - 0.5/4) * 100) = round(87.5) = 88
-        XCTAssertEqual(r.score, 88)
+        // weightedErrors = 0.5 (un mot en trop), score lissé sur la longueur
+        XCTAssertEqual(r.score, 91)
     }
 
     func testEmptyTranscriptScoresZero() {
@@ -63,16 +64,13 @@ final class SentenceScoringServiceTests: XCTestCase {
     func testMultipleErrorsAccumulate() {
         let r = service.score(expected: "I need to check the logs",
                               transcript: "I need check logs")
-        // missing "to" (1.0) + missing "the" (1.0) + extra nothing? actually "logs" matches
-        // weightedErrors = 2, expectedCount = 6, score = round((1 - 2/6) * 100) = 67
-        XCTAssertEqual(r.score, 67)
+        // "to" et "the" omis (mots fonctionnels)
+        XCTAssertEqual(r.score, 86)
     }
 
     func testCompletelyWrongTranscriptScoresVeryLow() {
         let r = service.score(expected: "I need to check the logs",
                               transcript: "the quick brown fox jumps over")
-        // Each expected word substituted (6 * 1.0) + 1 extra word (0.5) = 6.5
-        // accuracy = 1 - 6.5/6 = negative, clamped to 0
         XCTAssertEqual(r.score, 0)
     }
 

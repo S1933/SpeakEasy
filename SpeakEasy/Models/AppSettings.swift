@@ -5,10 +5,14 @@ import SwiftData
 final class AppSettings {
     var sessionSize: Int
     var voiceLocale: String
+    var preferredMode: String
 
-    init(sessionSize: Int = 10, voiceLocale: String = "en-US") {
+    init(sessionSize: Int = 10,
+         voiceLocale: String = "en-US",
+         preferredMode: String = PracticeMode.repeatAfter.rawValue) {
         self.sessionSize = sessionSize
         self.voiceLocale = voiceLocale
+        self.preferredMode = preferredMode
     }
 }
 
