@@ -1,4 +1,5 @@
 import SwiftUI
+import Speech
 
 struct OnboardingView: View {
     let locale: Locale

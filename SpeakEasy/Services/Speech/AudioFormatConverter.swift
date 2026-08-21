@@ -1,3 +1,4 @@
+import os
 import AVFoundation
 
 /// Convertit les buffers du micro vers le format attendu par SpeechAnalyzer.

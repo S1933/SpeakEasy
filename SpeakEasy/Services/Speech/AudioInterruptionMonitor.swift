@@ -1,5 +1,6 @@
-import AVFoundation
-import Foundation
+@preconcurrency import os
+@preconcurrency import AVFoundation
+@preconcurrency import Foundation
 
 @MainActor
 final class AudioInterruptionMonitor {

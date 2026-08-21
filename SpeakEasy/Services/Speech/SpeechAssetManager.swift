@@ -1,5 +1,6 @@
 import Foundation
 import Observation
+import os
 import Speech
 
 @MainActor @Observable

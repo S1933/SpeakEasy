@@ -1,3 +1,4 @@
+import os
 import SwiftUI
 import SwiftData
 
@@ -27,19 +28,25 @@ struct SpeakEasyApp: App {
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         // Palier 1 — nominal, avec plan de migration.
+        var openError: (any Error)?
         do {
             let c = try ModelContainer(for: schema,
                                        migrationPlan: SpeakEasyMigrationPlan.self,
                                        configurations: config)
             return (c, .healthy)
         } catch {
+            openError = error
             Log.data.error("Ouverture du store impossible: \(error, privacy: .public)")
         }
 
         // Palier 2 — store illisible : on le met de côté et on repart à neuf.
         // On ARCHIVE plutôt que de supprimer : récupérable via support.
         if let url = config.url as URL?, FileManager.default.fileExists(atPath: url.path) {
-            let backup = url.appendingPathExtension("corrupt-\(Int(Date.now.timeIntervalSince1970))")
+            let isLegacyPreV1 = (openError as NSError?)?.localizedDescription.contains("unknown model version") ?? false
+            let suffix = isLegacyPreV1
+                ? "legacy-preV1-\(Int(Date.now.timeIntervalSince1970))"
+                : "corrupt-\(Int(Date.now.timeIntervalSince1970))"
+            let backup = url.appendingPathExtension(suffix)
             try? FileManager.default.moveItem(at: url, to: backup)
             Log.data.fault("Store archivé vers \(backup.lastPathComponent, privacy: .public)")
             if let c = try? ModelContainer(for: schema, configurations: config) {

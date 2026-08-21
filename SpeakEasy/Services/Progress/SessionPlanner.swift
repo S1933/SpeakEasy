@@ -30,8 +30,8 @@ struct SessionPlanner: Sendable {
         now: Date = .now
     ) -> [LearningSentence] {
 
-        let pool = repository.all.filter {
-            categories.map { set in set.contains($0.category) } ?? true
+        let pool = repository.all.filter { sentence in
+            categories?.contains(sentence.category) ?? true
         }
         guard !pool.isEmpty else { return [] }
 
@@ -46,10 +46,16 @@ struct SessionPlanner: Sendable {
         }
 
         // 1 — dues à révision, la plus en retard d'abord
-        append(pool
-            .filter { (progress[$0.id]?.dueDate).map { $0 <= now } ?? false }
-            .sorted { ($0.dueDate(in: progress) ?? .distantPast)
-                    < ($1.dueDate(in: progress) ?? .distantPast) })
+        let dueCandidates = pool.filter { sentence in
+            guard let dueDate = progress[sentence.id]?.dueDate else { return false }
+            return dueDate <= now
+        }
+        let dueSorted = dueCandidates.sorted { lhs, rhs in
+            let lhsDate = lhs.dueDate(in: progress) ?? .distantPast
+            let rhsDate = rhs.dueDate(in: progress) ?? .distantPast
+            return lhsDate < rhsDate
+        }
+        append(dueSorted)
 
         // 2 — difficiles, le plus faible score d'abord
         append(pool
@@ -65,10 +71,13 @@ struct SessionPlanner: Sendable {
             .sorted { ($0.difficulty, $0.id) < ($1.difficulty, $1.id) })
 
         // 4 — complément : maîtrisées les plus anciennes (entretien)
-        append(pool
-            .filter { progress[$0.id]?.isCompleted == true }
-            .sorted { ($0.lastPracticed(in: progress) ?? .distantPast)
-                    < ($1.lastPracticed(in: progress) ?? .distantPast) })
+        let mastered = pool.filter { progress[$0.id]?.isCompleted == true }
+        let masteredSorted = mastered.sorted { lhs, rhs in
+            let lhsDate = lhs.lastPracticed(in: progress) ?? .distantPast
+            let rhsDate = rhs.lastPracticed(in: progress) ?? .distantPast
+            return lhsDate < rhsDate
+        }
+        append(masteredSorted)
 
         // 5 — filet de sécurité : petit catalogue / petits filtres
         if queue.count < size {

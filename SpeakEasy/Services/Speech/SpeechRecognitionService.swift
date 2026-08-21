@@ -2,6 +2,7 @@ import Accelerate
 import AVFoundation
 import Foundation
 import Observation
+import os
 import Speech
 
 @MainActor
@@ -201,7 +202,7 @@ final class SpeechRecognitionService {
         let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream()
         self.inputContinuation = continuation
 
-        inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) { buffer, _ in
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) { [audioRecorder] buffer, _ in
             // Thread temps réel : aucune allocation, aucun verrou bloquant, aucun Task.
             meter.ingest(buffer)
             audioRecorder.write(buffer)

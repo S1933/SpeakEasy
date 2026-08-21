@@ -1,17 +1,18 @@
 import Foundation
+import os
 import SwiftData
 
 /// Règle d'or : une fois une version publiée, ne JAMAIS modifier un
 /// VersionedSchema existant — ajoute-en un nouveau et une étape de migration.
 enum SpeakEasySchemaV1: VersionedSchema {
-    static var versionIdentifier = Schema.Version(1, 0, 0)
+    static let versionIdentifier = Schema.Version(1, 0, 0)
     static var models: [any PersistentModel.Type] {
         [SentenceProgress.self, AppSettings.self]
     }
 }
 
 enum SpeakEasySchemaV2: VersionedSchema {
-    static var versionIdentifier = Schema.Version(2, 0, 0)
+    static let versionIdentifier = Schema.Version(2, 0, 0)
     static var models: [any PersistentModel.Type] {
         [SentenceProgress.self, AppSettings.self, DailyActivity.self]
     }

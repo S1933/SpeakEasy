@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 struct SentenceRepository: Sendable {
     /// Le catalogue est immuable et embarqué : une seule lecture par process.
@@ -8,7 +9,7 @@ struct SentenceRepository: Sendable {
     private let byID: [Int: LearningSentence]
     private let byCategory: [SentenceCategory: [LearningSentence]]
 
-    private init() {
+    private nonisolated init() {
         let loaded = Self.loadBundled()
         self.sentences = loaded
         self.byID = Dictionary(uniqueKeysWithValues: loaded.map { ($0.id, $0) })
@@ -16,19 +17,19 @@ struct SentenceRepository: Sendable {
     }
 
     /// Init d'injection — réservé aux tests.
-    init(sentences: [LearningSentence]) {
+    nonisolated init(sentences: [LearningSentence]) {
         self.sentences = sentences
         self.byID = Dictionary(loaded: sentences)
         self.byCategory = Dictionary(grouping: sentences, by: \.category)
     }
 
-    var all: [LearningSentence] { sentences }
-    var count: Int { sentences.count }
+    nonisolated var all: [LearningSentence] { sentences }
+    nonisolated var count: Int { sentences.count }
 
-    func sentence(id: Int) -> LearningSentence? { byID[id] }
-    func sentences(in category: SentenceCategory) -> [LearningSentence] { byCategory[category] ?? [] }
+    nonisolated func sentence(id: Int) -> LearningSentence? { byID[id] }
+    nonisolated func sentences(in category: SentenceCategory) -> [LearningSentence] { byCategory[category] ?? [] }
 
-    private static func loadBundled() -> [LearningSentence] {
+    private nonisolated static func loadBundled() -> [LearningSentence] {
         guard let url = Bundle.main.url(forResource: "sentences", withExtension: "json") else {
             Log.data.fault("sentences.json absent du bundle")
             assertionFailure("sentences.json missing from bundle")
@@ -46,7 +47,7 @@ struct SentenceRepository: Sendable {
 
 private extension Dictionary where Key == Int, Value == LearningSentence {
     /// Tolère les doublons d'id en test (garde le premier) plutôt que de crasher.
-    init(loaded: [LearningSentence]) {
+    nonisolated init(loaded: [LearningSentence]) {
         self = Dictionary(loaded.map { ($0.id, $0) }, uniquingKeysWith: { first, _ in first })
     }
 }
