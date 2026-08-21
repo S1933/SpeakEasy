@@ -1,0 +1,33 @@
+name: CI
+
+on:
+  push:
+    branches: [main, from-pi]
+  pull_request:
+
+jobs:
+  corpus:
+    name: Corpus validation
+    runs-on: macos-latest
+    steps:
+      - uses: actions/checkout@v4
+      - name: Validate corpus
+        run: swift Scripts/validate_corpus.swift
+
+  build-test:
+    name: Build + Tests
+    runs-on: macos-latest
+    needs: corpus
+    steps:
+      - uses: actions/checkout@v4
+      - name: Show SDKs
+        run: xcodebuild -showsdks
+      - name: Build
+        run: >
+          xcodebuild build -project SpeakEasy.xcodeproj -scheme SpeakEasy
+          -destination 'platform=iOS Simulator,name=iPhone 16'
+          CODE_SIGNING_ALLOWED=NO
+      - name: Test
+        run: >
+          xcodebuild test -project SpeakEasy.xcodeproj -scheme SpeakEasy
+          -destination 'platform=iOS Simulator,name=iPhone 16'
