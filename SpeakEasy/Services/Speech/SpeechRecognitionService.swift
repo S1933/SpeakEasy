@@ -161,8 +161,12 @@ final class SpeechRecognitionService {
 
     private func setupPipeline() async throws {
         let transcriber = SpeechTranscriber(locale: locale, preset: .progressiveTranscription)
-        if let request = try await AssetInventory.assetInstallationRequest(supporting: [transcriber]) {
-            try await request.downloadAndInstall()
+        // Les assets sont garantis présents : SpeechAssetManager s'en charge à
+        // l'onboarding. Si ce n'est pas le cas, on échoue vite et proprement.
+        guard await SpeechTranscriber.installedLocales.contains(where: {
+            $0.identifier(.bcp47) == locale.identifier(.bcp47)
+        }) else {
+            throw RecordingError.assetsUnavailable
         }
         self.transcriber = transcriber
 

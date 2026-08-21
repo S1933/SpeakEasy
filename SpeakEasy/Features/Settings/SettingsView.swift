@@ -7,6 +7,7 @@ struct SettingsView: View {
     @Query private var settingsList: [AppSettings]
     @State private var settings: AppSettings?
     @State private var showingResetConfirmation = false
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
 
     var body: some View {
         Form {
@@ -67,8 +68,11 @@ struct SettingsView: View {
             get: { VoiceOption(rawValue: settings?.voiceLocale ?? "en-US") ?? .enUS },
             set: { newValue in
                 guard let settings else { return }
+                let changed = settings.voiceLocale != newValue.rawValue
                 settings.voiceLocale = newValue.rawValue
                 try? modelContext.save()
+                // S3.5 : un changement de locale relance l'onboarding (assets).
+                if changed { hasCompletedOnboarding = false }
             }
         )
     }

@@ -4,6 +4,7 @@ import SwiftData
 struct PracticeView: View {
     @Environment(\.dismiss) private var dismiss
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(SpeechPlaybackService.self) var playback
     @State var viewModel: PracticeViewModel
 
@@ -42,6 +43,12 @@ struct PracticeView: View {
         }
         .onDisappear {
             Task { await viewModel.cancelSession() }
+        }
+        .onAppear {
+            viewModel.onAppear()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            if newPhase != .active { viewModel.handleBackgrounding() }
         }
     }
 
