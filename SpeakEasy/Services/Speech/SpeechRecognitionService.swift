@@ -177,7 +177,7 @@ final class SpeechRecognitionService {
                     }
                 }
             } catch {
-                // Finalization drives termination.
+                Log.speech.error("Result stream failed: \(error, privacy: .public)")
             }
         }
 
@@ -185,7 +185,7 @@ final class SpeechRecognitionService {
             do {
                 try await analyzer.start(inputSequence: stream)
             } catch {
-                // Surface via finalizer if needed.
+                Log.speech.error("Analyzer pipeline failed: \(error, privacy: .public)")
             }
         }
 
