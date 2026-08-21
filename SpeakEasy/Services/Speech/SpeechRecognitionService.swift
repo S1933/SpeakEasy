@@ -65,7 +65,10 @@ final class SpeechRecognitionService {
     }
 
     func startRecording() async throws {
-        guard status == .idle || status == .transcribing else { return }
+        // Pas de retour silencieux : un état inattendu est une erreur explicite.
+        guard status == .idle || status == .transcribing else {
+            throw RecordingError.busy
+        }
         finalizedTranscript = ""
         volatileTranscript = ""
         streamFailure = nil
@@ -216,11 +219,14 @@ final class SpeechRecognitionService {
 
         startCollecting(from: transcriber)
 
-        Task { [analyzer] in
+        Task { [weak self, analyzer] in
             do {
                 try await analyzer.start(inputSequence: stream)
             } catch {
+                // Propager jusqu'à PracticeViewModel via streamFailure (pas
+                // seulement logger) pour afficher la vraie erreur au moment du stop.
                 Log.speech.error("Analyzer pipeline failed: \(error, privacy: .public)")
+                await MainActor.run { self?.streamFailure = error }
             }
         }
 

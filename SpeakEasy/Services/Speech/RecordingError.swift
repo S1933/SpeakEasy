@@ -7,6 +7,7 @@ enum RecordingError: Error, Sendable, LocalizedError, Equatable {
     case speechDenied
     case assetsUnavailable
     case noSpeech
+    case busy
     case audioInterruption
     case framework(String)
 
@@ -20,6 +21,8 @@ enum RecordingError: Error, Sendable, LocalizedError, Equatable {
             return "Speech recognition isn't available right now."
         case .noSpeech:
             return "I couldn't hear anything."
+        case .busy:
+            return "Recording is already in progress."
         case .audioInterruption:
             return "Recording was interrupted."
         }

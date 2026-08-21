@@ -50,7 +50,10 @@ struct PracticeView: View {
             viewModel.onAppear()
         }
         .onChange(of: scenePhase) { _, newPhase in
-            if newPhase != .active { viewModel.handleBackgrounding() }
+            // Réagit UNIQUEMENT au vrai backgrounding (⌂ ou Home indicator).
+            // `.inactive` est transitoire (notifications, contrôle du volume,
+            // app switcher) et ne doit pas interrompre l'enregistrement.
+            if newPhase == .background { viewModel.handleBackgrounding() }
         }
     }
 

@@ -58,6 +58,16 @@ struct SentenceScoringService: Sendable {
             return .empty(expected: expected, transcript: transcript, mode: mode)
         }
 
+        // Transcript vide → 0, sans passer par l'alignement (évite le chemin
+        // dégénéré et fournit des chips « manquant » pour chaque token attendu).
+        if transcriptTokens.isEmpty {
+            return AttemptResult(expected: expected, transcript: transcript, score: 0,
+                                 tokens: SentenceNormalizer.displayTokens(expected).map {
+                                     TokenResult(text: $0, status: .missing)
+                                 },
+                                 mode: mode)
+        }
+
         let alignment = align(expected: expectedTokens, transcript: transcriptTokens,
                               keywords: keywords, profile: profile)
 
@@ -83,9 +93,7 @@ struct SentenceScoringService: Sendable {
             }
         }
 
-        let score = transcriptTokens.isEmpty
-            ? 0
-            : normalizedScore(errors: weightedErrors, expectedCount: expectedTokens.count)
+        let score = normalizedScore(errors: weightedErrors, expectedCount: expectedTokens.count)
 
         let tokens = buildTokenResults(alignment: alignment,
                                        expectedText: SentenceNormalizer.displayTokens(expected),
