@@ -73,7 +73,6 @@ struct SpeakEasyApp: App {
                     HomeView()
                 } else {
                     OnboardingView(
-                        locale: Locale(identifier: "en-US"),
                         assets: assetManager,
                         onReady: { hasCompletedOnboarding = true }
                     )

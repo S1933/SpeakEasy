@@ -4,6 +4,7 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(SpeechPlaybackService.self) private var playback
     @Query private var settingsList: [AppSettings]
     @State private var settings: AppSettings?
     @State private var showingResetConfirmation = false
@@ -88,6 +89,8 @@ struct SettingsView: View {
                 let changed = settings.voiceLocale != newValue.rawValue
                 settings.voiceLocale = newValue.rawValue
                 try? modelContext.save()
+                // Synchronisation immédiate du playback (source unique : voiceLocale).
+                playback.localeIdentifier = newValue.rawValue
                 // S3.5 : un changement de locale relance l'onboarding (assets).
                 if changed { hasCompletedOnboarding = false }
             }

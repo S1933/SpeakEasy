@@ -2,10 +2,10 @@ import SwiftUI
 import Speech
 
 struct OnboardingView: View {
-    let locale: Locale
     let assets: SpeechAssetManager
     let onReady: () -> Void
 
+    @Environment(\.modelContext) private var context
     @State private var micGranted = false
     @State private var speechGranted = false
 
@@ -77,6 +77,10 @@ struct OnboardingView: View {
     }
 
     private func runSetup() async {
+        // Source unique de vérité : la locale choisie dans les Réglages, pas
+        // une valeur codée en dur (#6). Si en-GB est sélectionnée, les assets
+        // et la reconnaissance suivent cette locale.
+        let locale = Locale(identifier: AppSettings.current(in: context).voiceLocale)
         micGranted = await PermissionService.requestMicrophone()
         speechGranted = await PermissionService.requestSpeech() == .authorized
         await assets.check(locale: locale)
@@ -85,6 +89,5 @@ struct OnboardingView: View {
 }
 
 #Preview {
-    OnboardingView(locale: Locale(identifier: "en-US"),
-                   assets: SpeechAssetManager(), onReady: {})
+    OnboardingView(assets: SpeechAssetManager(), onReady: {})
 }
