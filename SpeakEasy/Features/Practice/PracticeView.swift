@@ -3,21 +3,23 @@ import SwiftData
 
 struct PracticeView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
     @Environment(SpeechPlaybackService.self) var playback
     @State var viewModel: PracticeViewModel
 
     init(
+        queue: [LearningSentence],
         playback: SpeechPlaybackService,
-        sessionSize: Int,
-        onSessionComplete: @escaping ([AttemptResult], [LearningSentence]) -> Void,
-        recognition: SpeechRecognitionService = SpeechRecognitionService()
+        localeIdentifier: String = "en-US",
+        recordAttempt: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
+        onSessionComplete: @escaping ([AttemptResult], [LearningSentence]) -> Void = { _, _ in }
     ) {
+        let recognition = SpeechRecognitionService(locale: Locale(identifier: localeIdentifier))
         _viewModel = State(initialValue: PracticeViewModel(
+            queue: queue,
             playback: playback,
             recognition: recognition,
-            sessionSize: sessionSize,
+            recordAttempt: recordAttempt,
             onSessionComplete: onSessionComplete
         ))
     }
@@ -31,8 +33,7 @@ struct PracticeView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    viewModel.stopPlayback()
-                    viewModel.recognition.cancel()
+                    viewModel.cancelSession()
                     dismiss()
                 } label: {
                     Image(systemName: "xmark")
@@ -40,16 +41,8 @@ struct PracticeView: View {
                 .accessibilityLabel("Close practice")
             }
         }
-        .onChange(of: viewModel.phase) { _, newPhase in
-            if case .result(let result) = newPhase,
-               let sentence = viewModel.currentSentence {
-                let service = ProgressService(context: modelContext)
-                service.recordAttempt(sentenceID: sentence.id, score: result.score)
-            }
-        }
         .onDisappear {
-            viewModel.stopPlayback()
-            viewModel.recognition.cancel()
+            viewModel.cancelSession()
         }
     }
 
@@ -89,7 +82,7 @@ struct PracticeView: View {
             ProcessingContent(progressText: viewModel.progressText)
         case .result(let result):
             ResultContent(
-                progressText: viewModel.sessionProgressText,
+                progressText: viewModel.progressText,
                 result: result,
                 feedback: viewModel.feedback(for: result),
                 retryTitle: "Try again",
@@ -121,8 +114,8 @@ struct PracticeView: View {
 #Preview {
     NavigationStack {
         PracticeView(
+            queue: Array(SentenceRepository().all.prefix(10)),
             playback: SpeechPlaybackService(),
-            sessionSize: 10,
             onSessionComplete: { _, _ in }
         )
     }

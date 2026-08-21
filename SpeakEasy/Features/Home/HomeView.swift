@@ -9,6 +9,7 @@ enum HomeRoute: Hashable {
 
 struct HomeView: View {
     @Environment(SpeechPlaybackService.self) var playback
+    @Environment(\.modelContext) private var modelContext
     @Query var allProgress: [SentenceProgress]
     @Query var settingsList: [AppSettings]
     @State var path = NavigationPath()
@@ -64,10 +65,15 @@ struct HomeView: View {
             .navigationDestination(for: HomeRoute.self) { route in
                 switch route {
                 case .practice:
-                    let size = settings?.sessionSize ?? 10
+                    let queue = buildPracticeQueue()
                     PracticeView(
+                        queue: queue,
                         playback: playback,
-                        sessionSize: size,
+                        localeIdentifier: settings?.voiceLocale ?? "en-US",
+                        recordAttempt: { id, score in
+                            ProgressService(context: modelContext)
+                                .recordAttempt(sentenceID: id, score: score)
+                        },
                         onSessionComplete: { results, sentences in
                             sessionResults = SessionResults(
                                 attempts: results,
@@ -137,6 +143,24 @@ struct HomeView: View {
     private var primaryCTATitle: String {
         if allProgress.isEmpty { return "Start practicing" }
         return "Start practicing"
+    }
+
+    private func buildPracticeQueue() -> [LearningSentence] {
+        let snapshots = Dictionary(
+            uniqueKeysWithValues: allProgress.map {
+                ($0.sentenceID, SessionPlanner.Snapshot(
+                    attempts: $0.attempts,
+                    bestScore: $0.bestScore,
+                    lastPracticedAt: $0.lastPracticedAt,
+                    dueDate: nil,   // alimenté en S4.5 (SM-2)
+                    isCompleted: $0.isCompleted
+                ))
+            }
+        )
+        return SessionPlanner().buildQueue(
+            size: settings?.sessionSize ?? 10,
+            progress: snapshots
+        )
     }
 }
 

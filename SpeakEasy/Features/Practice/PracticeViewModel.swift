@@ -13,68 +13,65 @@ final class PracticeViewModel {
         case error(RecordingError)
     }
 
+    /// Pourquoi l'enregistrement s'est terminé (S1.3)
+    enum StopReason {
+        case user
+        case timeout
+        case interruption
+    }
+
     private(set) var phase: Phase = .ready
-    private(set) var sentenceIndex: Int = 0
+    private let queue: [LearningSentence]
+    private(set) var queueIndex: Int = 0
     private(set) var sessionAttempts: [(LearningSentence, AttemptResult)] = []
 
-    private let repository: SentenceRepository
     private let playback: SpeechPlaybackService
     let recognition: SpeechRecognitionService
     private let scoring: SentenceScoringService
     private let feedback: FeedbackService
-    let sessionSize: Int
+    private let recordAttempt: @MainActor (Int, Int) -> Void
     let onSessionComplete: ([AttemptResult], [LearningSentence]) -> Void
+    private var timeoutTask: Task<Void, Never>?
+
+    let maxRecordingDuration: TimeInterval
+
+    var currentSentence: LearningSentence? {
+        queue.indices.contains(queueIndex) ? queue[queueIndex] : nil
+    }
 
     var elapsed: TimeInterval { recognition.elapsed }
     var amplitude: Double { recognition.amplitude }
 
+    /// Un seul compteur, cohérent sur TOUS les écrans (cf. S1.7).
+    var progressText: String {
+        "\(min(queueIndex + 1, queue.count)) of \(queue.count)"
+    }
+
+    var isLastInSession: Bool { queueIndex >= queue.count - 1 }
+    var sessionComplete: Bool { queueIndex >= queue.count }
+
+    var nextButtonTitle: String {
+        sessionComplete ? "See summary" : "Next sentence"
+    }
+
     init(
-        repository: SentenceRepository = SentenceRepository(),
+        queue: [LearningSentence],
         playback: SpeechPlaybackService,
         recognition: SpeechRecognitionService = SpeechRecognitionService(),
         scoring: SentenceScoringService = SentenceScoringService(),
         feedback: FeedbackService = FeedbackService(),
-        sessionSize: Int,
+        recordAttempt: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
+        maxRecordingDuration: TimeInterval = 15,
         onSessionComplete: @escaping ([AttemptResult], [LearningSentence]) -> Void = { _, _ in }
     ) {
-        self.repository = repository
+        self.queue = queue
         self.playback = playback
         self.recognition = recognition
         self.scoring = scoring
         self.feedback = feedback
-        self.sessionSize = sessionSize
+        self.recordAttempt = recordAttempt
+        self.maxRecordingDuration = maxRecordingDuration
         self.onSessionComplete = onSessionComplete
-    }
-
-    var currentSentence: LearningSentence? {
-        repository.sentence(at: sentenceIndex)
-    }
-
-    var totalCount: Int { repository.count }
-
-    var progressText: String {
-        "\(sentenceIndex + 1) of \(totalCount)"
-    }
-
-    var sessionProgressText: String {
-        let current = sessionAttempts.count + 1
-        return "\(min(current, sessionSize)) of \(sessionSize)"
-    }
-
-    var isLastInCatalog: Bool {
-        sentenceIndex >= totalCount - 1
-    }
-
-    var isLastInSession: Bool {
-        sessionAttempts.count >= sessionSize - 1
-    }
-
-    var sessionComplete: Bool {
-        sessionAttempts.count >= sessionSize
-    }
-
-    var nextButtonTitle: String {
-        sessionComplete ? "See summary" : "Next sentence"
     }
 
     func speakCurrent() {
@@ -91,7 +88,7 @@ final class PracticeViewModel {
         case .ready, .error:
             await beginRecording()
         case .recording:
-            await finishRecording()
+            await finishRecording(reason: .user)
         case .processing, .result:
             break
         }
@@ -100,20 +97,18 @@ final class PracticeViewModel {
     func retry() {
         guard case .result = phase else { return }
         sessionAttempts.removeLast()
+        // Pas de rollback : `attempts` doit refléter l'effort réel.
+        // Mais `bestScore` est un max, donc un retry raté ne dégrade jamais l'acquis.
         phase = .ready
     }
 
     func goToNext() {
         guard case .result = phase else { return }
         playback.stop()
-
+        queueIndex += 1
         if sessionComplete {
             finalizeSession()
             return
-        }
-
-        if !isLastInCatalog {
-            sentenceIndex += 1
         }
         phase = .ready
     }
@@ -142,6 +137,12 @@ final class PracticeViewModel {
         Haptics.impact(.light)
         do {
             try await recognition.startRecording()
+            timeoutTask = Task { [weak self, maxRecordingDuration] in
+                try? await Task.sleep(for: .seconds(maxRecordingDuration))
+                guard let self, !Task.isCancelled, self.phase == .recording else { return }
+                Log.speech.notice("Auto-stop après \(maxRecordingDuration, privacy: .public)s")
+                await self.finishRecording(reason: .timeout)
+            }
         } catch let error as RecordingError {
             Haptics.notify(.warning)
             phase = .error(error)
@@ -151,7 +152,9 @@ final class PracticeViewModel {
         }
     }
 
-    private func finishRecording() async {
+    private func finishRecording(reason: StopReason = .user) async {
+        timeoutTask?.cancel(); timeoutTask = nil
+        guard phase == .recording else { return }   // idempotent
         phase = .processing
         do {
             let transcript = try await recognition.stopRecording()
@@ -161,6 +164,7 @@ final class PracticeViewModel {
             }
             let result = scoring.score(expected: sentence.english, transcript: transcript)
             sessionAttempts.append((sentence, result))
+            recordAttempt(sentence.id, result.score)
             if result.score >= 85 {
                 Haptics.notify(.success)
             } else if result.score >= 50 {
@@ -176,6 +180,12 @@ final class PracticeViewModel {
             Haptics.notify(.error)
             phase = .error(.framework(error.localizedDescription))
         }
+    }
+
+    func cancelSession() {
+        timeoutTask?.cancel(); timeoutTask = nil
+        playback.stop()
+        recognition.cancel()
     }
 
     private func finalizeSession() {
