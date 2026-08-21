@@ -4,21 +4,36 @@ import XCTest
 final class FeedbackServiceTests: XCTestCase {
     let service = FeedbackService()
 
-    func testPerfectMatchFeedback() {
+    func testPerfectMatchHeading() {
         let r = AttemptResult(
             expected: "I need to check the logs",
             transcript: "I need to check the logs",
             score: 100,
             tokens: (1...6).map { _ in TokenResult(text: "x", status: .correct) }
         )
-        XCTAssertEqual(service.feedback(for: r), "Excellent. Perfect match.")
+        let f = service.feedback(for: r)
+        XCTAssertEqual(f.headline, "Perfect.")
+        XCTAssertNil(f.detail)
+        XCTAssertNil(f.drillWord)
+    }
+
+    func testRevealedPerfectIsNoted() {
+        let r = AttemptResult(
+            expected: "I need to check the logs",
+            transcript: "I need to check the logs",
+            score: 100,
+            tokens: (1...6).map { _ in TokenResult(text: "x", status: .correct) },
+            wasRevealed: true
+        )
+        XCTAssertEqual(service.feedback(for: r).detail,
+                       "Try it without revealing next time.")
     }
 
     func testMissingWordFeedback() {
         let r = AttemptResult(
             expected: "I need to check",
             transcript: "I need check",
-            score: 75,
+            score: 93,
             tokens: [
                 TokenResult(text: "I", status: .correct),
                 TokenResult(text: "need", status: .correct),
@@ -26,14 +41,16 @@ final class FeedbackServiceTests: XCTestCase {
                 TokenResult(text: "check", status: .correct)
             ]
         )
-        XCTAssertEqual(service.feedback(for: r), "Good attempt. You missed \"to\".")
+        let f = service.feedback(for: r)
+        XCTAssertEqual(f.headline, "Almost there.")
+        XCTAssertEqual(f.drillWord, "to")
     }
 
     func testSubstitutionFeedback() {
         let r = AttemptResult(
             expected: "I need to check",
             transcript: "I need to look",
-            score: 75,
+            score: 86,
             tokens: [
                 TokenResult(text: "I", status: .correct),
                 TokenResult(text: "need", status: .correct),
@@ -41,14 +58,16 @@ final class FeedbackServiceTests: XCTestCase {
                 TokenResult(text: "check", status: .incorrect(actual: "look"))
             ]
         )
-        XCTAssertEqual(service.feedback(for: r), "Almost. You said \"look\" instead of \"check\".")
+        let f = service.feedback(for: r)
+        XCTAssertEqual(f.headline, "One word off.")
+        XCTAssertEqual(f.drillWord, "check")
     }
 
-    func testMultipleErrorsFeedback() {
+    func testMultipleErrorsFocusesOne() {
         let r = AttemptResult(
             expected: "I need to check the logs",
             transcript: "I need check logs",
-            score: 67,
+            score: 86,
             tokens: [
                 TokenResult(text: "I", status: .correct),
                 TokenResult(text: "need", status: .correct),
@@ -58,6 +77,8 @@ final class FeedbackServiceTests: XCTestCase {
                 TokenResult(text: "logs", status: .correct)
             ]
         )
-        XCTAssertEqual(service.feedback(for: r), "Good attempt. Check the highlighted words and try again.")
+        let f = service.feedback(for: r)
+        XCTAssertEqual(f.headline, "Keep going.")
+        XCTAssertEqual(f.drillWord, "to")
     }
 }

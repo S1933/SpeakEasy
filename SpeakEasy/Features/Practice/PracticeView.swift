@@ -3,21 +3,28 @@ import SwiftData
 
 struct PracticeView: View {
     @Environment(\.dismiss) private var dismiss
-    @Environment(\.modelContext) private var modelContext
     @Environment(\.accessibilityReduceMotion) private var reduceMotion
+    @Environment(\.scenePhase) private var scenePhase
     @Environment(SpeechPlaybackService.self) var playback
     @State var viewModel: PracticeViewModel
 
     init(
+        queue: [LearningSentence],
         playback: SpeechPlaybackService,
-        sessionSize: Int,
-        onSessionComplete: @escaping ([AttemptResult], [LearningSentence]) -> Void,
-        recognition: SpeechRecognitionService = SpeechRecognitionService()
+        localeIdentifier: String = "en-US",
+        mode: PracticeMode = .repeatAfter,
+        recordAttempt: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
+        finalizeReview: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
+        onSessionComplete: @escaping ([AttemptResult], [LearningSentence]) -> Void = { _, _ in }
     ) {
+        let recognition = SpeechRecognitionService(locale: Locale(identifier: localeIdentifier))
         _viewModel = State(initialValue: PracticeViewModel(
+            queue: queue,
             playback: playback,
             recognition: recognition,
-            sessionSize: sessionSize,
+            recordAttempt: recordAttempt,
+            finalizeReview: finalizeReview,
+            mode: mode,
             onSessionComplete: onSessionComplete
         ))
     }
@@ -31,25 +38,24 @@ struct PracticeView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    viewModel.stopPlayback()
-                    viewModel.recognition.cancel()
-                    dismiss()
+                    Task { await viewModel.cancelSession(); dismiss() }
                 } label: {
                     Image(systemName: "xmark")
                 }
                 .accessibilityLabel("Close practice")
             }
         }
-        .onChange(of: viewModel.phase) { _, newPhase in
-            if case .result(let result) = newPhase,
-               let sentence = viewModel.currentSentence {
-                let service = ProgressService(context: modelContext)
-                service.recordAttempt(sentenceID: sentence.id, score: result.score)
-            }
-        }
         .onDisappear {
-            viewModel.stopPlayback()
-            viewModel.recognition.cancel()
+            Task { await viewModel.cancelSession() }
+        }
+        .onAppear {
+            viewModel.onAppear()
+        }
+        .onChange(of: scenePhase) { _, newPhase in
+            // Réagit UNIQUEMENT au vrai backgrounding (⌂ ou Home indicator).
+            // `.inactive` est transitoire (notifications, contrôle du volume,
+            // app switcher) et ne doit pas interrompre l'enregistrement.
+            if newPhase == .background { viewModel.handleBackgrounding() }
         }
     }
 
@@ -73,8 +79,11 @@ struct PracticeView: View {
             ReadyContent(
                 sentence: sentence,
                 progressText: viewModel.progressText,
+                mode: viewModel.mode,
+                isRevealed: viewModel.isAnswerRevealed,
                 isSpeaking: playback.isSpeaking,
                 onListen: viewModel.speakCurrent,
+                onReveal: viewModel.revealAnswer,
                 onRecord: { Task { await viewModel.toggleRecording() } }
             )
         case .recording:
@@ -82,14 +91,17 @@ struct PracticeView: View {
                 sentence: sentence,
                 progressText: viewModel.progressText,
                 elapsed: viewModel.elapsed,
-                amplitude: viewModel.amplitude,
+                meter: viewModel.meter,
+                isActive: viewModel.phase == .recording,
+                finalized: viewModel.recognition.finalizedTranscript,
+                volatile: viewModel.recognition.volatileTranscript,
                 onStop: { Task { await viewModel.toggleRecording() } }
             )
         case .processing:
             ProcessingContent(progressText: viewModel.progressText)
         case .result(let result):
             ResultContent(
-                progressText: viewModel.sessionProgressText,
+                progressText: viewModel.progressText,
                 result: result,
                 feedback: viewModel.feedback(for: result),
                 retryTitle: "Try again",
@@ -121,10 +133,10 @@ struct PracticeView: View {
 #Preview {
     NavigationStack {
         PracticeView(
+            queue: Array(SentenceRepository.shared.all.prefix(10)),
             playback: SpeechPlaybackService(),
-            sessionSize: 10,
             onSessionComplete: { _, _ in }
         )
     }
-    .modelContainer(for: [SentenceProgress.self, AppSettings.self], inMemory: true)
+    .modelContainer(for: [SentenceProgress.self, AppSettings.self, DailyActivity.self], inMemory: true)
 }

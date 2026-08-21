@@ -2,7 +2,7 @@
 
 Practice spoken English, one sentence at a time.
 
-SpeakEasy is a SwiftUI app that uses Apple's new **SpeechAnalyzer** API (iOS 26) to score your pronunciation against French→English practice sentences in real time.
+SpeakEasy is a SwiftUI app that uses Apple's new **SpeechAnalyzer** API (iOS 26) to score what the recogniser heard against French→English practice sentences in real time, with phonetic tolerance for common French-speaker pronunciation.
 
 ## Features
 
@@ -56,7 +56,7 @@ SpeakEasy/
 
 **Key technical decisions:**
 
-- **SpeechAnalyzer pipeline** — uses `SpeechAnalyzer` + `SpeechTranscriber` with the `.progressiveTranscription` preset for streaming results. Audio is captured via `AVAudioEngine` tap at the hardware format (typically 48 kHz Float32), then converted per-buffer to **16 kHz Int16 mono interleaved** with `AVAudioConverter`. A fresh `AVAudioConverter` is allocated for each tap callback because the converter retains internal resampler state across calls.
+- **SpeechAnalyzer pipeline** — uses `SpeechAnalyzer` + `SpeechTranscriber` with the `.progressiveTranscription` preset for streaming results. Audio is captured via `AVAudioEngine` tap at the hardware format (typically 48 kHz Float32), then converted per-buffer to **16 kHz Int16 mono interleaved**. A single reusable `AVAudioConverter` (with `.noDataNow` on dry input) is kept across callbacks — no allocation on the real-time audio thread.
 - **Concurrency** — `@Observable` + `@MainActor`; `SpeechRecognitionService` is main-actor isolated; long-running work (`analyzer.start(inputSequence:)`, result collection) is dispatched as unstructured `Task`s with explicit error handling.
 - **Persistence** — SwiftData with two models: `SentenceProgress` (per-sentence score history) and `AppSettings` (session size).
 

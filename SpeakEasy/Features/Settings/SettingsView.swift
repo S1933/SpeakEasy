@@ -4,8 +4,12 @@ import SwiftData
 struct SettingsView: View {
     @Environment(\.modelContext) private var modelContext
     @Environment(\.dismiss) private var dismiss
+    @Environment(SpeechPlaybackService.self) private var playback
     @Query private var settingsList: [AppSettings]
+    @State private var settings: AppSettings?
     @State private var showingResetConfirmation = false
+    @AppStorage("hasCompletedOnboarding") private var hasCompletedOnboarding = false
+    @AppStorage("dailyReminderEnabled") private var dailyReminderEnabled = false
 
     var body: some View {
         Form {
@@ -33,6 +37,22 @@ struct SettingsView: View {
                 }
             }
 
+            Section("Daily reminder") {
+                Toggle("Practise reminder", isOn: $dailyReminderEnabled)
+                    .onChange(of: dailyReminderEnabled) { _, on in
+                        Task {
+                            if on {
+                                var comps = DateComponents()
+                                comps.hour = 18
+                                comps.minute = 0
+                                await NotificationService.requestAndSchedule(at: comps)
+                            } else {
+                                NotificationService.cancel()
+                            }
+                        }
+                    }
+            }
+
             Section("About") {
                 LabeledContent("Version", value: appVersion)
             }
@@ -42,6 +62,11 @@ struct SettingsView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button("Done") { dismiss() }
+            }
+        }
+        .task {
+            if settings == nil {
+                settings = AppSettings.current(in: modelContext)
             }
         }
         .confirmationDialog(
@@ -56,37 +81,35 @@ struct SettingsView: View {
         }
     }
 
-    private var settings: AppSettings {
-        if let existing = settingsList.first { return existing }
-        let new = AppSettings()
-        modelContext.insert(new)
-        try? modelContext.save()
-        return new
-    }
-
     private var voiceBinding: Binding<VoiceOption> {
         Binding(
-            get: { VoiceOption(rawValue: settings.voiceLocale) ?? .enUS },
-            set: {
-                settings.voiceLocale = $0.rawValue
+            get: { VoiceOption(rawValue: settings?.voiceLocale ?? "en-US") ?? .enUS },
+            set: { newValue in
+                guard let settings else { return }
+                let changed = settings.voiceLocale != newValue.rawValue
+                settings.voiceLocale = newValue.rawValue
                 try? modelContext.save()
+                // Synchronisation immédiate du playback (source unique : voiceLocale).
+                playback.localeIdentifier = newValue.rawValue
+                // S3.5 : un changement de locale relance l'onboarding (assets).
+                if changed { hasCompletedOnboarding = false }
             }
         )
     }
 
     private var sessionBinding: Binding<SessionSizeOption> {
         Binding(
-            get: { SessionSizeOption(rawValue: settings.sessionSize) ?? .ten },
-            set: {
-                settings.sessionSize = $0.rawValue
+            get: { SessionSizeOption(rawValue: settings?.sessionSize ?? 10) ?? .ten },
+            set: { newValue in
+                guard let settings else { return }
+                settings.sessionSize = newValue.rawValue
                 try? modelContext.save()
             }
         )
     }
 
     private func reset() {
-        try? modelContext.delete(model: SentenceProgress.self)
-        try? modelContext.save()
+        ProgressService(context: modelContext).resetAll()
     }
 
     private var appVersion: String {
@@ -101,5 +124,5 @@ struct SettingsView: View {
     NavigationStack {
         SettingsView()
     }
-    .modelContainer(for: [SentenceProgress.self, AppSettings.self], inMemory: true)
+    .modelContainer(for: [SentenceProgress.self, AppSettings.self, DailyActivity.self], inMemory: true)
 }

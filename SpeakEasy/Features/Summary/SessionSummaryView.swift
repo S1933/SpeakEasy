@@ -23,12 +23,8 @@ struct SessionSummaryView: View {
 
             Button(action: onDone) {
                 Text("Done")
-                    .font(.headline)
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
-                    .background(.tint, in: RoundedRectangle(cornerRadius: 14))
-                    .foregroundStyle(.white)
             }
+            .buttonStyle(PrimaryButtonStyle())
             .accessibilityLabel("Done with session")
         }
         .padding(.horizontal, 24)

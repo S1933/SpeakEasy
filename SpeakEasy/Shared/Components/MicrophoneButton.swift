@@ -11,15 +11,19 @@ struct MicrophoneButton: View {
     let state: MicrophoneVisualState
     let action: () -> Void
 
+    @ScaledMetric(relativeTo: .largeTitle) private var diameter: CGFloat = 96
+    @ScaledMetric(relativeTo: .largeTitle) private var iconSize: CGFloat = 36
+
     var body: some View {
         Button(action: action) {
             VStack(spacing: 8) {
                 ZStack {
                     Circle()
                         .fill(backgroundStyle)
-                        .frame(width: 96, height: 96)
+                        .frame(width: diameter, height: diameter)
 
                     iconView
+                        .font(.system(size: iconSize))
                 }
 
                 Text(label)
@@ -27,6 +31,7 @@ struct MicrophoneButton: View {
                     .foregroundStyle(.secondary)
             }
         }
+        .disabled(isDisabled)
         .accessibilityLabel(accessibilityLabel)
     }
 
@@ -42,11 +47,9 @@ struct MicrophoneButton: View {
         switch state {
         case .idle, .disabled:
             Image(systemName: "mic.fill")
-                .font(.system(size: 36, weight: .regular))
                 .foregroundStyle(.primary)
         case .recording:
             Image(systemName: "stop.fill")
-                .font(.system(size: 36, weight: .regular))
                 .foregroundStyle(.red)
         case .processing:
             ProgressView()
