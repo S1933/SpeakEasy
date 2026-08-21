@@ -33,8 +33,7 @@ struct PracticeView: View {
         .toolbar {
             ToolbarItem(placement: .topBarTrailing) {
                 Button {
-                    viewModel.cancelSession()
-                    dismiss()
+                    Task { await viewModel.cancelSession(); dismiss() }
                 } label: {
                     Image(systemName: "xmark")
                 }
@@ -42,7 +41,7 @@ struct PracticeView: View {
             }
         }
         .onDisappear {
-            viewModel.cancelSession()
+            Task { await viewModel.cancelSession() }
         }
     }
 
@@ -75,7 +74,8 @@ struct PracticeView: View {
                 sentence: sentence,
                 progressText: viewModel.progressText,
                 elapsed: viewModel.elapsed,
-                amplitude: viewModel.amplitude,
+                meter: viewModel.meter,
+                isActive: viewModel.phase == .recording,
                 onStop: { Task { await viewModel.toggleRecording() } }
             )
         case .processing:
@@ -114,10 +114,10 @@ struct PracticeView: View {
 #Preview {
     NavigationStack {
         PracticeView(
-            queue: Array(SentenceRepository().all.prefix(10)),
+            queue: Array(SentenceRepository.shared.all.prefix(10)),
             playback: SpeechPlaybackService(),
             onSessionComplete: { _, _ in }
         )
     }
-    .modelContainer(for: [SentenceProgress.self, AppSettings.self], inMemory: true)
+    .modelContainer(for: [SentenceProgress.self, AppSettings.self, DailyActivity.self], inMemory: true)
 }

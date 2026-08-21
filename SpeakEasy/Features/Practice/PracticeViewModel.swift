@@ -40,7 +40,7 @@ final class PracticeViewModel {
     }
 
     var elapsed: TimeInterval { recognition.elapsed }
-    var amplitude: Double { recognition.amplitude }
+    var meter: AudioLevelMeter { recognition.meter }
 
     /// Un seul compteur, cohérent sur TOUS les écrans (cf. S1.7).
     var progressText: String {
@@ -182,10 +182,10 @@ final class PracticeViewModel {
         }
     }
 
-    func cancelSession() {
+    func cancelSession() async {
         timeoutTask?.cancel(); timeoutTask = nil
         playback.stop()
-        recognition.cancel()
+        await recognition.cancel()
     }
 
     private func finalizeSession() {

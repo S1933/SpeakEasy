@@ -41,7 +41,8 @@ struct RecordingContent: View {
     let sentence: LearningSentence
     let progressText: String
     let elapsed: TimeInterval
-    let amplitude: Double
+    let meter: AudioLevelMeter
+    let isActive: Bool
     let onStop: () -> Void
 
     var body: some View {
@@ -66,7 +67,7 @@ struct RecordingContent: View {
                     .monospacedDigit()
                     .accessibilityLabel("Elapsed time \(Int(elapsed)) seconds")
 
-                WaveformView(amplitude: amplitude)
+                WaveformView(meter: meter, isActive: isActive)
 
                 MicrophoneButton(state: .recording, action: onStop)
 

@@ -1,3 +1,4 @@
+import Accelerate
 import AVFoundation
 import Foundation
 import Observation
@@ -14,12 +15,17 @@ final class SpeechRecognitionService {
     }
 
     private(set) var status: Status = .idle
-    private(set) var amplitude: Double = 0
     private(set) var elapsed: TimeInterval = 0
+
+    /// Niveau audio lu par l'UI à 30 Hz (aucune invalidation @Observable).
+    let meter = AudioLevelMeter()
 
     private let locale: Locale
     private let maxDuration: TimeInterval
     private let audioSession = AudioSessionController()
+
+    /// Converter temps réel, créé au setup — réutilisé, jamais ré-alloué par callback.
+    private var audioConverter: AudioFormatConverter?
 
     private var analyzer: SpeechAnalyzer?
     private var transcriber: SpeechTranscriber?
@@ -72,14 +78,14 @@ final class SpeechRecognitionService {
         }
 
         do {
-            try audioSession.activateForRecording()
+            try await audioSession.activateForRecording()
             try await setupPipeline()
             try startAudioEngine()
         } catch let error as RecordingError {
-            cleanup()
+            await cleanup()
             throw error
         } catch {
-            cleanup()
+            await cleanup()
             throw RecordingError.framework(error.localizedDescription)
         }
 
@@ -109,7 +115,7 @@ final class SpeechRecognitionService {
         collectionTask = nil
 
         if let streamFailure {
-            cleanup()
+            await cleanup()
             status = .idle
             throw RecordingError.framework(streamFailure.localizedDescription)
         }
@@ -117,7 +123,7 @@ final class SpeechRecognitionService {
         let transcript = (finalizedTranscript.isEmpty ? volatileTranscript : finalizedTranscript)
             .trimmingCharacters(in: .whitespacesAndNewlines)
 
-        cleanup()
+        await cleanup()
         status = .idle
         guard !transcript.isEmpty else {
             throw RecordingError.noSpeech
@@ -125,7 +131,7 @@ final class SpeechRecognitionService {
         return transcript
     }
 
-    func cancel() {
+    func cancel() async {
         timerTask?.cancel()
         timerTask = nil
         if let engine = audioEngine {
@@ -136,7 +142,7 @@ final class SpeechRecognitionService {
         inputContinuation = nil
         collectionTask?.cancel()
         collectionTask = nil
-        cleanup()
+        await cleanup()
         status = .idle
     }
 
@@ -174,19 +180,20 @@ final class SpeechRecognitionService {
 
         let inputFormat = inputNode.outputFormat(forBus: 0)
 
+        guard let audioConverter = AudioFormatConverter(from: inputFormat, to: analyzerFormat) else {
+            throw RecordingError.framework("converter unavailable")
+        }
+        self.audioConverter = audioConverter
+        let meter = self.meter
+
         let (stream, continuation) = AsyncStream<AnalyzerInput>.makeStream()
         self.inputContinuation = continuation
 
-        inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) { [weak self] buffer, _ in
-            let amp = Self.computeAmplitude(buffer: buffer)
-            guard let converter = AVAudioConverter(from: inputFormat, to: analyzerFormat),
-                  let converted = Self.convert(buffer: buffer, using: converter, to: analyzerFormat) else {
-                return
-            }
+        inputNode.installTap(onBus: 0, bufferSize: 4096, format: nil) { buffer, _ in
+            // Thread temps réel : aucune allocation, aucun verrou bloquant, aucun Task.
+            meter.ingest(buffer)
+            guard let converted = audioConverter.convert(buffer) else { return }
             continuation.yield(AnalyzerInput(buffer: converted))
-            Task { @MainActor [weak self] in
-                self?.amplitude = amp
-            }
         }
 
         let analyzer = SpeechAnalyzer(modules: [transcriber])
@@ -259,68 +266,34 @@ final class SpeechRecognitionService {
         }
     }
 
-    private func cleanup() {
+    private func cleanup() async {
         audioEngine = nil
         analyzer = nil
         transcriber = nil
-        audioSession.deactivate()
+        await audioSession.deactivate()
     }
 
-    private static func computeAmplitude(buffer: AVAudioPCMBuffer) -> Double {
-        let frames = Int(buffer.frameLength)
+    static func computeAmplitude(buffer: AVAudioPCMBuffer) -> Double {
+        let frames = vDSP_Length(buffer.frameLength)
         guard frames > 0 else { return 0 }
+
         switch buffer.format.commonFormat {
         case .pcmFormatFloat32:
-            guard let channelData = buffer.floatChannelData else { return 0 }
-            let channels = Int(buffer.format.channelCount)
-            var sumSquares: Float = 0
-            for c in 0..<channels {
-                let samples = channelData[c]
-                for f in 0..<frames {
-                    let s = samples[f]
-                    sumSquares += s * s
-                }
-            }
-            let rms = (sumSquares / Float(channels * frames)).squareRoot()
-            return min(1.0, Double(rms) * 4)
+            guard let data = buffer.floatChannelData else { return 0 }
+            var rms: Float = 0
+            vDSP_rmsqv(data[0], 1, &rms, frames)          // canal 0 suffit pour un VU-mètre
+            return min(1, Double(rms) * 4)
+
         case .pcmFormatInt16:
-            guard let channelData = buffer.int16ChannelData else { return 0 }
-            let channels = Int(buffer.format.channelCount)
-            var sumSquares: Double = 0
-            for c in 0..<channels {
-                let samples = channelData[c]
-                for f in 0..<frames {
-                    let s = Double(samples[f])
-                    sumSquares += s * s
-                }
-            }
-            let rms = (sumSquares / Double(channels * frames)).squareRoot() / Double(Int16.max)
-            return min(1.0, rms * 4)
+            guard let data = buffer.int16ChannelData else { return 0 }
+            var floats = [Float](repeating: 0, count: Int(frames))
+            vDSP_vflt16(data[0], 1, &floats, 1, frames)
+            var rms: Float = 0
+            vDSP_rmsqv(floats, 1, &rms, frames)
+            return min(1, Double(rms) / Double(Int16.max) * 4)
+
         default:
             return 0
         }
-    }
-
-    private static func convert(
-        buffer: AVAudioPCMBuffer,
-        using converter: AVAudioConverter,
-        to format: AVAudioFormat
-    ) -> AVAudioPCMBuffer? {
-        let ratio = format.sampleRate / buffer.format.sampleRate
-        let capacity = AVAudioFrameCount(Double(buffer.frameLength) * ratio + 32)
-        guard let out = AVAudioPCMBuffer(pcmFormat: format, frameCapacity: capacity) else { return nil }
-        var supplied = false
-        var error: NSError?
-        converter.convert(to: out, error: &error) { _, status in
-            if supplied {
-                status.pointee = .endOfStream
-                return nil
-            }
-            supplied = true
-            status.pointee = .haveData
-            return buffer
-        }
-        if error != nil { return nil }
-        return out
     }
 }

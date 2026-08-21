@@ -1,28 +1,36 @@
 import SwiftUI
 
 struct WaveformView: View {
-    let amplitude: Double
+    let meter: AudioLevelMeter
+    let isActive: Bool
+
+    @Environment(\.accessibilityReduceMotion) private var reduceMotion
+
+    private var frameRate: Double { reduceMotion ? 10 : 30 }
 
     var body: some View {
-        TimelineView(.animation(minimumInterval: 1.0 / 30.0)) { timeline in
-            Canvas { context, size in
-                let bars = 32
-                let barWidth = size.width / CGFloat(bars)
-                let time = timeline.date.timeIntervalSinceReferenceDate
-                for i in 0..<bars {
-                    let phase = time * 2 + Double(i) * 0.3
-                    let envelope = 0.15 + 0.85 * amplitude
-                    let h = (0.15 + 0.85 * envelope * abs(sin(phase))) * size.height
-                    let x = CGFloat(i) * barWidth
+        TimelineView(.animation(minimumInterval: 1 / frameRate, paused: !isActive)) { _ in
+            Canvas(opaque: false, rendersAsynchronously: false) { context, size in
+                let samples = meter.waveform
+                guard !samples.isEmpty else { return }
+
+                let barWidth = size.width / CGFloat(samples.count)
+                let inset = barWidth * 0.25
+                let midY = size.height / 2
+
+                // Un seul Path pour toutes les barres → une seule primitive de dessin.
+                var path = Path()
+                for (index, sample) in samples.enumerated() {
+                    let height = max(2, CGFloat(0.06 + 0.94 * sample) * size.height)
                     let rect = CGRect(
-                        x: x + barWidth * 0.2,
-                        y: (size.height - h) / 2,
-                        width: barWidth * 0.6,
-                        height: h
+                        x: CGFloat(index) * barWidth + inset,
+                        y: midY - height / 2,
+                        width: barWidth - inset * 2,
+                        height: height
                     )
-                    let path = Path(roundedRect: rect, cornerRadius: barWidth * 0.3)
-                    context.fill(path, with: .color(.primary.opacity(0.35)))
+                    path.addRoundedRect(in: rect, cornerSize: CGSize(width: 1.5, height: 1.5))
                 }
+                context.fill(path, with: .color(.accentColor.opacity(0.55)))
             }
         }
         .frame(height: 60)
@@ -31,6 +39,6 @@ struct WaveformView: View {
 }
 
 #Preview {
-    WaveformView(amplitude: 0.5)
+    WaveformView(meter: AudioLevelMeter(), isActive: true)
         .padding()
 }
