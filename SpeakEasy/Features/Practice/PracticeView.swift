@@ -14,6 +14,7 @@ struct PracticeView: View {
         localeIdentifier: String = "en-US",
         mode: PracticeMode = .repeatAfter,
         recordAttempt: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
+        finalizeReview: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
         onSessionComplete: @escaping ([AttemptResult], [LearningSentence]) -> Void = { _, _ in }
     ) {
         let recognition = SpeechRecognitionService(locale: Locale(identifier: localeIdentifier))
@@ -22,6 +23,7 @@ struct PracticeView: View {
             playback: playback,
             recognition: recognition,
             recordAttempt: recordAttempt,
+            finalizeReview: finalizeReview,
             mode: mode,
             onSessionComplete: onSessionComplete
         ))

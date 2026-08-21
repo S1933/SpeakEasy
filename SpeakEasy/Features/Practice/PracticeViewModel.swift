@@ -25,12 +25,16 @@ final class PracticeViewModel {
     private let queue: [LearningSentence]
     private(set) var queueIndex: Int = 0
     private(set) var sessionAttempts: [(LearningSentence, AttemptResult)] = []
+    /// Meilleure tentative par phrase (id) pour la session — sert de score de
+    /// finalisation SM-2 quand on passe à la phrase suivante (#13).
+    private var sessionBest: [Int: Int] = [:]
 
     private let playback: SpeechPlaybackService
     let recognition: any SpeechRecognizing
     private let scoring: SentenceScoringService
     private let feedback: FeedbackService
     private let recordAttempt: @MainActor (Int, Int) -> Void
+    private let finalizeReview: @MainActor (Int, Int) -> Void
     let onSessionComplete: ([AttemptResult], [LearningSentence]) -> Void
     private var timeoutTask: Task<Void, Never>?
     private var interruptionMonitor: AudioInterruptionMonitor?
@@ -68,6 +72,7 @@ final class PracticeViewModel {
         scoring: SentenceScoringService = SentenceScoringService(),
         feedback: FeedbackService = FeedbackService(),
         recordAttempt: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
+        finalizeReview: @escaping @MainActor (Int, Int) -> Void = { _, _ in },
         maxRecordingDuration: TimeInterval = 15,
         mode: PracticeMode = .repeatAfter,
         onSessionComplete: @escaping ([AttemptResult], [LearningSentence]) -> Void = { _, _ in }
@@ -78,6 +83,7 @@ final class PracticeViewModel {
         self.scoring = scoring
         self.feedback = feedback
         self.recordAttempt = recordAttempt
+        self.finalizeReview = finalizeReview
         self.maxRecordingDuration = maxRecordingDuration
         self.mode = mode
         self.onSessionComplete = onSessionComplete
@@ -121,6 +127,11 @@ final class PracticeViewModel {
     func goToNext() {
         guard case .result = phase else { return }
         playback.stop()
+        // SM-2 une SEULE fois par phrase, au passage à la suivante (#13).
+        if let id = currentSentence?.id, let best = sessionBest[id] {
+            finalizeReview(id, best)
+            sessionBest[id] = nil
+        }
         queueIndex += 1
         if sessionComplete {
             finalizeSession()
@@ -184,7 +195,8 @@ final class PracticeViewModel {
             result = result.withRecordingURL(recognition.recordingURL)
             sessionAttempts.append((sentence, result))
             recordAttempt(sentence.id, result.effectiveScore)
-            if result.score >= 85 {
+            sessionBest[sentence.id] = max(sessionBest[sentence.id] ?? 0, result.effectiveScore)
+            if result.score >= ProgressRules.masteryScore {
                 Haptics.notify(.success)
             } else if result.score >= 50 {
                 Haptics.impact(.medium)

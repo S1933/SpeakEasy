@@ -61,7 +61,8 @@ struct SessionPlanner: Sendable {
         append(pool
             .filter {
                 guard let p = progress[$0.id] else { return false }
-                return p.attempts >= 2 && p.bestScore < 85
+                return p.attempts >= ProgressRules.difficultMinimumAttempts
+                    && p.bestScore < ProgressRules.masteryScore
             }
             .sorted { ($0.bestScore(in: progress)) < ($1.bestScore(in: progress)) })
 

@@ -2,8 +2,14 @@ import SwiftUI
 import SwiftData
 
 struct ReviewListView: View {
+    // Même définition de « difficile » que ProgressQueries/SessionPlanner (#12).
+    private static let difficultPredicate = #Predicate<SentenceProgress> {
+        $0.attempts >= ProgressRules.difficultMinimumAttempts
+            && $0.bestScore < ProgressRules.masteryScore
+    }
+
     @Environment(\.modelContext) private var context
-    @Query(filter: #Predicate<SentenceProgress> { $0.attempts >= 2 && $0.bestScore < 85 },
+    @Query(filter: ReviewListView.difficultPredicate,
            sort: \.bestScore)
     private var difficult: [SentenceProgress]
 

@@ -11,8 +11,10 @@ enum ProgressQueries {
     }
 
     static func difficultCount(in context: ModelContext) -> Int {
-        (try? context.fetchCount(FetchDescriptor<SentenceProgress>(
-            predicate: #Predicate { $0.attempts >= 3 && $0.bestScore < 85 }
+        let minAttempts = ProgressRules.difficultMinimumAttempts
+        let mastery = ProgressRules.masteryScore
+        return (try? context.fetchCount(FetchDescriptor<SentenceProgress>(
+            predicate: #Predicate { $0.attempts >= minAttempts && $0.bestScore < mastery }
         ))) ?? 0
     }
 

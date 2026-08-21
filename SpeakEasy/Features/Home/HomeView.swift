@@ -181,6 +181,9 @@ struct HomeView: View {
             recordAttempt: { id, score in
                 ProgressService(context: context).recordAttempt(sentenceID: id, score: score)
             },
+            finalizeReview: { id, score in
+                ProgressService(context: context).finalizeReview(sentenceID: id, score: score)
+            },
             onSessionComplete: { results, sentences in
                 sessionResults = SessionResults(attempts: results, sentences: sentences)
                 path.append(HomeRoute.summary)
@@ -196,7 +199,7 @@ struct HomeView: View {
                     attempts: $0.attempts,
                     bestScore: $0.bestScore,
                     lastPracticedAt: $0.lastPracticedAt,
-                    dueDate: nil,   // alimenté en S4.5 (SM-2)
+                    dueDate: $0.dueDate,
                     isCompleted: $0.isCompleted
                 ))
             }

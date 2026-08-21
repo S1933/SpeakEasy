@@ -19,10 +19,12 @@ final class ProgressService {
         progress.latestScore = score
         progress.bestScore = max(progress.bestScore, score)
         progress.lastPracticedAt = date
-        progress.isCompleted = progress.bestScore >= 85
+        progress.isCompleted = progress.bestScore >= ProgressRules.masteryScore
         progress.recentScores.append(score)
         if progress.recentScores.count > 20 { progress.recentScores.removeFirst() }
-        ReviewScheduler.apply(score: score, to: progress, on: date)
+        // NOTE : pas de ReviewScheduler ici — la planification SM-2 n'est
+        // appliquée qu'UNE fois par phrase, via finalizeReview(), quand
+        // l'utilisateur passe à la phrase suivante (cf. #13).
 
         let day = Calendar.current.startOfDay(for: date)
         let activity = fetchOrCreateActivity(day: day)
@@ -32,6 +34,19 @@ final class ProgressService {
 
         do { try context.save() }
         catch { Log.data.error("save recordAttempt: \(error, privacy: .public)") }
+        return progress
+    }
+
+    /// Applique la planification SM-2 UNE fois, quand une phrase est validée
+    /// (passage à la phrase suivante). `score` = la meilleure tentative de la
+    /// session pour cette phrase — un retry ne fait donc jamais avancer SM-2
+    /// plusieurs fois.
+    @discardableResult
+    func finalizeReview(sentenceID: Int, score: Int, on date: Date = .now) -> SentenceProgress {
+        let progress = fetchOrCreate(sentenceID: sentenceID)
+        ReviewScheduler.apply(score: score, to: progress, on: date)
+        do { try context.save() }
+        catch { Log.data.error("save finalizeReview: \(error, privacy: .public)") }
         return progress
     }
 
