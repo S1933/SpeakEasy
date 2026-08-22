@@ -1,0 +1,67 @@
+[
+  {
+    "id": 1,
+    "kind": "conversation",
+    "title": "The late arrival",
+    "difficulty": 1,
+    "lines": [
+      { "id": 0, "speaker": "Sam", "text": "Hey, are you still coming to the meeting this morning, or did something come up?" },
+      { "id": 1, "speaker": "Alex", "text": "I am, but I'll be about ten minutes late. My train was delayed on the way in, and I had to wait for the next one." },
+      { "id": 2, "speaker": "Sam", "text": "No problem at all. I'll let the others know so nobody waits for you to start." },
+      { "id": 3, "speaker": "Alex", "text": "Thanks, I really appreciate that. I'll join the call as soon as I get to my desk and catch up on what I missed." },
+      { "id": 4, "speaker": "Sam", "text": "Sounds good. We have coffee and pastries in the kitchen, so you won't miss much." }
+    ]
+  },
+  {
+    "id": 2,
+    "kind": "story",
+    "title": "The quiet morning",
+    "difficulty": 1,
+    "lines": [
+      { "id": 0, "speaker": null, "text": "The town woke slowly under a soft gray sky. Streetlights still glowed along the main road, and the air carried the smell of fresh bread from the bakery on the corner." },
+      { "id": 1, "speaker": null, "text": "Maria opened her window and leaned out, watching the first cars appear at the end of the street. She had lived here her whole life, and still every morning felt a little new." },
+      { "id": 2, "speaker": null, "text": "Downstairs, the kettle whistled. Her mother was already at the table, reading a newspaper and sipping tea from a chipped blue cup they refused to throw away." },
+      { "id": 3, "speaker": null, "text": "Maria sat down, and together they watched the morning settle into its familiar rhythm, quiet and warm, before the town truly opened its eyes." }
+    ]
+  },
+  {
+    "id": 3,
+    "kind": "conversation",
+    "title": "The broken printer",
+    "difficulty": 2,
+    "lines": [
+      { "id": 0, "speaker": "Nina", "text": "Do you have a minute? The printer in the corner office is showing an error, and I can't clear it no matter what I try." },
+      { "id": 1, "speaker": "Leo", "text": "Let me take a look. Does it say there's a paper jam, or is it complaining about the ink cartridge?" },
+      { "id": 2, "speaker": "Nina", "text": "The screen just says the tray is open, but I've pushed it in a hundred times and it still won't recognize it." },
+      { "id": 3, "speaker": "Leo", "text": "That might be a sensor problem. They're not expensive, and we have a spare one in the supply closet." },
+      { "id": 4, "speaker": "Nina", "text": "Great, let's fix it properly. If it keeps breaking, we should consider replacing the whole machine." },
+      { "id": 5, "speaker": "Leo", "text": "Agreed. A reliable printer saves more time than we think." }
+    ]
+  },
+  {
+    "id": 4,
+    "kind": "story",
+    "title": "The last train",
+    "difficulty": 2,
+    "lines": [
+      { "id": 0, "speaker": null, "text": "The station was almost empty at that hour. A single lamp cast a pale circle on the platform, and the wind pushed an old newspaper along the tracks." },
+      { "id": 1, "speaker": null, "text": "Thomas checked his watch for the third time. The last train of the evening was due in a few minutes, and he had promised to be home before midnight." },
+      { "id": 2, "speaker": null, "text": "In the distance, a warm light appeared, growing slowly brighter as the train rounded the bend. The sound of it reached him first, a low steady hum that grew into a gentle roar." },
+      { "id": 3, "speaker": null, "text": "He picked up his bag and stepped forward, feeling the familiar excitement of travel that never quite faded, no matter how many times he made the trip." }
+    ]
+  },
+  {
+    "id": 5,
+    "kind": "conversation",
+    "title": "Planning the move",
+    "difficulty": 3,
+    "lines": [
+      { "id": 0, "speaker": "Elena", "text": "We need to decide on a date for the office move, because the landlord needs an answer by the end of the week." },
+      { "id": 1, "speaker": "Marco", "text": "I think the first weekend of next month works best, as long as we reserve the truck beforehand and the weather cooperates." },
+      { "id": 2, "speaker": "Elena", "text": "Let's also think about the furniture. Some of it won't fit through the new doorways, so we might need to sell the bigger desks." },
+      { "id": 3, "speaker": "Marco", "text": "That's a good point. We could measure everything this week and list what stays." },
+      { "id": 4, "speaker": "Elena", "text": "Perfect. And we should inform the clients about the change of address in advance, so nothing gets lost." },
+      { "id": 5, "speaker": "Marco", "text": "Agreed. If we plan carefully, the whole move should take a single day with little disruption." }
+    ]
+  }
+]
