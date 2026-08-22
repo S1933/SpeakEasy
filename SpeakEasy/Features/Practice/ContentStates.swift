@@ -44,6 +44,7 @@ struct ReadyContent: View {
 struct RecordingContent: View {
     let sentence: LearningSentence
     let progressText: String
+    let mode: PracticeMode
     let elapsed: TimeInterval
     let meter: AudioLevelMeter
     let isActive: Bool
@@ -63,10 +64,12 @@ struct RecordingContent: View {
 
             Spacer(minLength: 8)
 
-            Text(sentence.french)
+            // Repeat: the English stays fully legible — the user is reading it aloud.
+            // Translate: the French stays as a dimmed reminder of the target.
+            Text(mode.showsEnglishBeforeRecording ? sentence.english : sentence.french)
                 .font(.title2)
                 .multilineTextAlignment(.center)
-                .opacity(0.6)
+                .opacity(mode.showsEnglishBeforeRecording ? 1.0 : 0.6)
 
             Spacer(minLength: 16)
 

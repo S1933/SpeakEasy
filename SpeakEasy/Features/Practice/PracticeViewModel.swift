@@ -99,6 +99,7 @@ final class PracticeViewModel {
     }
 
     func revealAnswer() {
+        guard mode.allowsReveal else { return }
         isAnswerRevealed = true
     }
 
@@ -133,6 +134,9 @@ final class PracticeViewModel {
             sessionBest[id] = nil
         }
         queueIndex += 1
+        // The reveal belongs to the sentence: it survives a retry and is only
+        // cleared when moving to the next sentence (#2 fix-reveal-flag).
+        isAnswerRevealed = false
         if sessionComplete {
             finalizeSession()
             return
@@ -160,7 +164,6 @@ final class PracticeViewModel {
 
     private func beginRecording() async {
         playback.stop()
-        isAnswerRevealed = false
         phase = .recording
         Haptics.impact(.light)
         do {

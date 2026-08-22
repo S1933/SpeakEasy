@@ -90,6 +90,7 @@ struct PracticeView: View {
             RecordingContent(
                 sentence: sentence,
                 progressText: viewModel.progressText,
+                mode: viewModel.mode,
                 elapsed: viewModel.elapsed,
                 meter: viewModel.meter,
                 isActive: viewModel.phase == .recording,
