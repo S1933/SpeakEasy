@@ -15,9 +15,6 @@ struct ScoringProfile: Sendable, Equatable {
     static let strict   = ScoringProfile(missing: 1.0, wrong: 1.0, extra: 0.5,
                                          keywordMultiplier: 1.5, functionWordMultiplier: 0.5,
                                          nearMissRatio: 0.5)
-    static let balanced = ScoringProfile(missing: 1.0, wrong: 1.0, extra: 0.4,
-                                         keywordMultiplier: 1.5, functionWordMultiplier: 0.35,
-                                         nearMissRatio: 0.4)
     static let lenient  = ScoringProfile(missing: 1.0, wrong: 0.8, extra: 0.25,
                                          keywordMultiplier: 1.5, functionWordMultiplier: 0.2,
                                          nearMissRatio: 0.3)

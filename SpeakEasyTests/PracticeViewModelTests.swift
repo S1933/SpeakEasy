@@ -9,12 +9,14 @@ struct PracticeViewModelTests {
         queue: [LearningSentence] = [.stub(id: 1, english: "I think so"),
                                      .stub(id: 2, english: "Let me check")],
         recognizer: FakeRecognizer = FakeRecognizer(script: .succeeds("i think so")),
+        mode: PracticeMode = .repeatAfter,
         recorded: @escaping @MainActor (Int, Int) -> Void = { _, _ in }
     ) -> PracticeViewModel {
         PracticeViewModel(queue: queue,
                           playback: SpeechPlaybackService(),
                           recognition: recognizer,
-                          recordAttempt: recorded)
+                          recordAttempt: recorded,
+                          mode: mode)
     }
 
     @Test("Nominal cycle: ready → recording → result")
@@ -32,6 +34,44 @@ struct PracticeViewModelTests {
         let vm = makeVM(recognizer: FakeRecognizer(script: .fails(.microphoneDenied)))
         await vm.toggleRecording()
         #expect(vm.lastError == .microphoneDenied)
+    }
+
+    @Test("Repeat ignores revealAnswer(): the score is never capped")
+    func repeatNeverRevealed() async {
+        let vm = makeVM()          // defaults to .repeatAfter
+        vm.revealAnswer()
+        #expect(vm.isAnswerRevealed == false)
+        await vm.toggleRecording(); await vm.toggleRecording()
+        #expect(vm.lastResult?.wasRevealed == false)
+        #expect(vm.lastResult?.effectiveScore == 100)
+    }
+
+    @Test("Translate caps the score at 70 after revealing the answer")
+    func translateRevealCapsScore() async {
+        let vm = makeVM(mode: .translate)
+        vm.revealAnswer()
+        #expect(vm.isAnswerRevealed == true)
+        await vm.toggleRecording(); await vm.toggleRecording()
+        #expect(vm.lastResult?.wasRevealed == true)
+        #expect(vm.lastResult?.effectiveScore == 70)
+    }
+
+    @Test("The reveal survives a retry and is cleared on the next sentence")
+    func revealIsStickyPerSentence() async {
+        let vm = makeVM(mode: .translate)
+        vm.revealAnswer()
+        await vm.toggleRecording(); await vm.toggleRecording()
+        #expect(vm.lastResult?.wasRevealed == true)
+
+        // The user retries: they keep the reveal, so the cap stays applied.
+        vm.retry()
+        #expect(vm.isAnswerRevealed == true)
+        await vm.toggleRecording(); await vm.toggleRecording()
+        #expect(vm.lastResult?.wasRevealed == true)
+
+        // Moving to the next sentence clears the reveal.
+        vm.goToNext()
+        #expect(vm.isAnswerRevealed == false)
     }
 
     @Test("retry() removes the attempt from the session but keeps the sentence")

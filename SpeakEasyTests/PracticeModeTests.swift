@@ -18,6 +18,31 @@ struct PracticeModeTests {
     func profiles() {
         #expect(PracticeMode.repeatAfter.scoringProfile == .strict)
         #expect(PracticeMode.translate.scoringProfile == .lenient)
-        #expect(PracticeMode.recall.scoringProfile == .balanced)
+    }
+
+    @Test("Only two modes remain")
+    func modeCount() {
+        #expect(PracticeMode.allCases.count == 2)
+        #expect(PracticeMode.allCases.contains(.repeatAfter))
+        #expect(PracticeMode.allCases.contains(.translate))
+    }
+
+    @Test("Repeat shows the English only, never the French")
+    func repeatIsEnglishOnly() {
+        #expect(PracticeMode.repeatAfter.showsFrenchPrompt == false)
+        #expect(PracticeMode.translate.showsFrenchPrompt == true)
+    }
+
+    @Test("Repeat has nothing to reveal")
+    func repeatHasNoReveal() {
+        #expect(PracticeMode.repeatAfter.allowsReveal == false)
+        #expect(PracticeMode.translate.allowsReveal == true)
+    }
+
+    @Test("A retired persisted mode falls back to Repeat")
+    func resolvesLegacyRawValue() {
+        #expect(PracticeMode.resolve("recall") == .repeatAfter)
+        #expect(PracticeMode.resolve(nil) == .repeatAfter)
+        #expect(PracticeMode.resolve("translate") == .translate)
     }
 }

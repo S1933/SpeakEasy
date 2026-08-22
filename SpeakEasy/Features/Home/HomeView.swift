@@ -73,7 +73,7 @@ struct HomeView: View {
                 case .focused(let queue):
                     makePracticeView(queue: queue)
                 case .review:
-                    ReviewListView { sentences in
+                    ReviewListView(mode: selectedMode) { sentences in
                         path.append(HomeRoute.focused(sentences))
                     }
                 case .summary:
@@ -93,7 +93,13 @@ struct HomeView: View {
             }
             .task(id: path.count) {
                 await refreshStats()
-                selectedMode = PracticeMode(rawValue: settings?.preferredMode ?? "") ?? .repeatAfter
+                let resolved = PracticeMode.resolve(settings?.preferredMode)
+                selectedMode = resolved
+                // Migrates a value persisted by an older build (e.g. "recall").
+                if let settings, settings.preferredMode != resolved.rawValue {
+                    settings.preferredMode = resolved.rawValue
+                    try? context.save()
+                }
             }
             .onChange(of: selectedMode) { _, newMode in
                 if let settings {

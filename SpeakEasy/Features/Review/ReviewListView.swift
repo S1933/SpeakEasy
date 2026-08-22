@@ -17,6 +17,8 @@ struct ReviewListView: View {
            sort: \.bestScore)
     private var difficult: [SentenceProgress]
 
+    /// Drives what the rows may show: in Repeat, French never appears.
+    let mode: PracticeMode
     let onStartFocusedSession: ([LearningSentence]) -> Void
 
     var body: some View {
@@ -30,7 +32,7 @@ struct ReviewListView: View {
                 Section {
                     ForEach(difficult, id: \.sentenceID) { progress in
                         if let sentence = SentenceRepository.shared.sentence(id: progress.sentenceID) {
-                            ReviewRow(sentence: sentence, progress: progress)
+                            ReviewRow(sentence: sentence, progress: progress, mode: mode)
                         }
                     }
                 } footer: {
@@ -57,11 +59,14 @@ struct ReviewListView: View {
 struct ReviewRow: View {
     let sentence: LearningSentence
     let progress: SentenceProgress
+    let mode: PracticeMode
 
     var body: some View {
         VStack(alignment: .leading, spacing: 6) {
             Text(sentence.english).font(.body)
-            Text(sentence.french).font(.caption).foregroundStyle(.secondary)
+            if mode.showsFrenchPrompt {
+                Text(sentence.french).font(.caption).foregroundStyle(.secondary)
+            }
 
             HStack(spacing: 12) {
                 Label("\(progress.bestScore)%", systemImage: "target")
