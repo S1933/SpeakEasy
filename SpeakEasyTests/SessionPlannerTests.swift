@@ -2,6 +2,7 @@ import Foundation
 import Testing
 @testable import SpeakEasy
 
+@MainActor
 @Suite("SessionPlanner")
 struct SessionPlannerTests {
 

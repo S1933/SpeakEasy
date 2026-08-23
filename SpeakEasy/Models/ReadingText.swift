@@ -1,18 +1,18 @@
 import Foundation
 
-enum ReadingKind: String, Codable, Sendable {
+enum ReadingKind: String, Codable, Sendable, Hashable {
     case conversation
     case story
 }
 
-struct ReadingLine: Codable, Sendable, Identifiable {
+struct ReadingLine: Codable, Sendable, Identifiable, Equatable, Hashable {
     let id: Int
     /// nil pour un récit ; nom du personnage pour un dialogue.
     let speaker: String?
     let text: String
 }
 
-struct ReadingText: Codable, Sendable, Identifiable {
+struct ReadingText: Codable, Sendable, Identifiable, Equatable, Hashable {
     let id: Int
     let kind: ReadingKind
     let title: String

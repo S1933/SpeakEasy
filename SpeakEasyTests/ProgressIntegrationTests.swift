@@ -7,6 +7,7 @@ import Testing
 /// ModelContainer → recordAttempt → finalizeReview (SM-2) → dueDate
 /// → snapshot → SessionPlanner, and verifies the due sentence comes out first.
 /// More meaningful than isolated unit tests (integration A→B).
+@MainActor
 @Suite("Progression integration (SM-2 → planner)")
 struct ProgressIntegrationTests {
 

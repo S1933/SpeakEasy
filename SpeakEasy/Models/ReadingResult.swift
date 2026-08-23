@@ -1,6 +1,6 @@
 import Foundation
 
-struct ReadingResult: Sendable, Equatable {
+struct ReadingResult: Sendable, Equatable, Hashable {
     let accuracy: Int              // % de mots corrects sur le texte
     let wcpm: Int                  // mots corrects par minute
     let missedIndices: [Int]

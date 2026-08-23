@@ -2,6 +2,7 @@ import Testing
 @testable import SpeakEasy
 
 /// Rejouables séquences d'hypothèses pour l'aligneur — aucune micro impliquée.
+@MainActor
 @Suite("ReadingFixtures")
 struct ReadingFixtures {
 

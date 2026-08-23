@@ -21,6 +21,22 @@ enum SentenceNormalizer {
         "um", "uh", "erm", "er", "ah", "hmm", "mm", "eh"
     ]
 
+    /// The ASR writes spoken numbers as digits ("5" for "five" — observed on
+    /// device during the Phase 0 spike). Reference texts spell numbers out,
+    /// so transcripts are mapped to their single-word form to keep the
+    /// alignment fair. Numbers without a single-word form ("23", "100") are
+    /// left as-is: the curated texts avoid them. One token in, one token out
+    /// — the displayTokens/tokenize cardinality contract is preserved.
+    private static let numberWords: [String: String] = [
+        "0": "zero", "1": "one", "2": "two", "3": "three", "4": "four",
+        "5": "five", "6": "six", "7": "seven", "8": "eight", "9": "nine",
+        "10": "ten", "11": "eleven", "12": "twelve", "13": "thirteen",
+        "14": "fourteen", "15": "fifteen", "16": "sixteen", "17": "seventeen",
+        "18": "eighteen", "19": "nineteen",
+        "20": "twenty", "30": "thirty", "40": "forty", "50": "fifty",
+        "60": "sixty", "70": "seventy", "80": "eighty", "90": "ninety"
+    ]
+
     // MARK: - API
 
     /// Canonical form of a sentence, for comparison or debug display.
@@ -39,6 +55,7 @@ enum SentenceNormalizer {
             .split(whereSeparator: \.isWhitespace)
             .map { String($0).trimmingCharacters(in: punctuation) }
             .filter { !$0.isEmpty }
+            .map { numberWords[$0] ?? $0 }
 
         return dropFillers ? tokens.filter { !fillers.contains($0) } : tokens
     }

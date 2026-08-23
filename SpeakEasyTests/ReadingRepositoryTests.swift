@@ -1,6 +1,7 @@
 import Testing
 @testable import SpeakEasy
 
+@MainActor
 @Suite("ReadingRepository & ReadingTokenizer")
 struct ReadingRepositoryTests {
 

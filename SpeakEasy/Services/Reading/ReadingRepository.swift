@@ -1,4 +1,5 @@
 import Foundation
+import os
 
 struct ReadingRepository: Sendable {
     /// The catalog is immutable and bundled: read once per process.

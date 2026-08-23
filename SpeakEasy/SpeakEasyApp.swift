@@ -24,7 +24,8 @@ struct SpeakEasyApp: App {
     }
 
     private static func makeContainer() -> (ModelContainer, StoreHealth) {
-        let schema = Schema([SentenceProgress.self, AppSettings.self, DailyActivity.self])
+        let schema = Schema([SentenceProgress.self, AppSettings.self,
+                             DailyActivity.self, ReadingProgress.self])
         let config = ModelConfiguration(schema: schema, isStoredInMemoryOnly: false)
 
         // Stage 1 — nominal.

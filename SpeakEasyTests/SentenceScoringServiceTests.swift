@@ -1,6 +1,7 @@
 import XCTest
 @testable import SpeakEasy
 
+@MainActor
 final class SentenceScoringServiceTests: XCTestCase {
     let service = SentenceScoringService()
 

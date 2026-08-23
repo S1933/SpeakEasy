@@ -1,6 +1,7 @@
 import Testing
 @testable import SpeakEasy
 
+@MainActor
 @Suite("ReadingAligner — DP, display lock, segments")
 struct ReadingAlignerTests {
 
@@ -106,8 +107,30 @@ struct ReadingAlignerTests {
         // curseur engagé sur la phrase 1 sautée
         #expect(snapshot.cursor >= 6)
     }
+
+    @Test("Une substitution de longueur très différente n'est PAS un near-miss")
+    /// Le rejet cheap doit s'activer sur les paires dont l'écart de longueur
+    /// rend impossible le seuil 0.7 (maxLen-minLen > 0.3*maxLen) — sans ce
+    /// court-circuit, l'aligner paierait un Levenshtein complet par cellule.
+    /// On choisit « elephant » (8) vs « ant » (3) : 5/8 = 0.625 < 0.7, le
+    /// DP passe par la branche `.substituted` sans jamais invoquer
+    /// `levenshtein` pour cette paire.
+    func largeLengthGapIsNotNearMiss() {
+        let text = ReadingText(
+            id: 906, kind: .story, title: "elephant", difficulty: 1,
+            lines: [ReadingLine(id: 0, speaker: nil, text: "the cat elephant on the mat")])
+        let aligner = ReadingAligner(reference: ReadingTokenizer.tokenize(text))
+        let snapshot = aligner.align(
+            ReadingFixtures.heard("the cat ant on the mat"))
+        if case .substituted(heard: let heard) = snapshot.states[2] {
+            #expect(heard == "ant")
+        } else {
+            Issue.record("expected .substituted(heard: \"ant\"), got \(snapshot.states[2])")
+        }
+    }
 }
 
+@MainActor
 @Suite("ReadingAligner — sessions segmentées après interruption")
 struct ReadingAlignerSessionTests {
 
@@ -139,6 +162,7 @@ struct ReadingAlignerSessionTests {
     }
 }
 
+@MainActor
 @Suite("ReadingScorer")
 struct ReadingScorerTests {
 
@@ -175,5 +199,45 @@ struct ReadingScorerTests {
             timings: [0: 1.0, 1: 2.0, 2: 5.0, 3: 6.0])  // 3 s de pause entre "cat" et "walked"
         let result = scorer.score(snapshot: snapshot, tokenCount: 4, duration: 8)
         #expect(result.hesitationIndices == [2])
+    }
+
+    @Test("Bonne bande de débit entre 90 et 160 wpm")
+    func goodPaceBand() {
+        let snapshot = AlignmentSnapshot(
+            states: Array(repeating: .correct, count: 10),
+            cursor: 10, committedUpTo: 10, insertions: 0, timings: [:])
+        // 10 corrects / (6 s / 60) = 100 wpm
+        let result = scorer.score(snapshot: snapshot, tokenCount: 10, duration: 6)
+        #expect(result.wcpm == 100)
+        #expect(result.paceBand == .good)
+    }
+
+    @Test("Substitutions et misses sont comptés séparément")
+    func missAndSubstitution() {
+        let snapshot = AlignmentSnapshot(
+            states: [.correct, .substituted(heard: "look"), .missed, .correct],
+            cursor: 4, committedUpTo: 4, insertions: 0, timings: [:])
+        let result = scorer.score(snapshot: snapshot, tokenCount: 4, duration: 60)
+        #expect(result.substitutedIndices == [1])
+        #expect(result.missedIndices == [2])
+        #expect(result.accuracy == 50)
+    }
+
+    @Test("Insertions reportées du snapshot")
+    func insertionsPropagate() {
+        let snapshot = AlignmentSnapshot(
+            states: Array(repeating: .correct, count: 5),
+            cursor: 5, committedUpTo: 5, insertions: 2, timings: [:])
+        let result = scorer.score(snapshot: snapshot, tokenCount: 5, duration: 30)
+        #expect(result.insertions == 2)
+    }
+
+    @Test("Texte vide : pas de crash, 0 %")
+    func emptyText() {
+        let snapshot = AlignmentSnapshot(states: [], cursor: 0, committedUpTo: 0,
+                                        insertions: 0, timings: [:])
+        let result = scorer.score(snapshot: snapshot, tokenCount: 0, duration: 0)
+        #expect(result.accuracy == 0)
+        #expect(result.wcpm == 0)
     }
 }

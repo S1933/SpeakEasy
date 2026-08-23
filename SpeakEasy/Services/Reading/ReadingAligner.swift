@@ -83,6 +83,14 @@ struct ReadingAligner: Sendable {
     private func isNearMiss(_ a: String, _ b: String) -> Bool {
         let maxLen = max(a.count, b.count)
         guard maxLen >= 4 else { return false }   // trop court : « in » vs « on » est une vraie erreur
+        // Cheap reject: the maximum Levenshtein distance between two strings
+        // is bounded by the absolute difference in length. If that lower
+        // bound already exceeds the threshold (1.0 - 0.7 = 0.3 of `maxLen`),
+        // no amount of character work can rescue it. Skipping the O(a·b) DP
+        // here is the hot path at 10 Hz × n·m cells.
+        let minLen = min(a.count, b.count)
+        let maxPossibleRatio = 1.0 - Double(maxLen - minLen) / Double(maxLen)
+        guard maxPossibleRatio >= 0.7 else { return false }
         let distance = levenshtein(Array(a), Array(b))
         return 1.0 - Double(distance) / Double(maxLen) >= 0.7
     }

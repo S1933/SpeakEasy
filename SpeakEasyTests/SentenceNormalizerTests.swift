@@ -1,6 +1,7 @@
 import XCTest
 @testable import SpeakEasy
 
+@MainActor
 final class SentenceNormalizerTests: XCTestCase {
     func testLowercases() {
         XCTAssertEqual(SentenceNormalizer.normalize("I THINK"), "i think")
@@ -57,5 +58,35 @@ final class SentenceNormalizerTests: XCTestCase {
 
     func testTokenizeEmptyReturnsEmpty() {
         XCTAssertEqual(SentenceNormalizer.tokenize(""), [])
+    }
+
+    // MARK: - Digit normalization (Phase 0 spike finding: ASR writes "5" for "five")
+
+    func testDigitTokensMapToWordForm() {
+        XCTAssertEqual(
+            SentenceNormalizer.tokenize("I have 5 dozen reasons"),
+            ["i", "have", "five", "dozen", "reasons"]
+        )
+    }
+
+    func testTeenAndTensDigitsMapToWordForm() {
+        XCTAssertEqual(SentenceNormalizer.tokenize("She said 12 and he said 30"),
+                       ["she", "said", "twelve", "and", "he", "said", "thirty"])
+    }
+
+    func testNumbersWithoutSingleWordFormPassThrough() {
+        XCTAssertEqual(SentenceNormalizer.tokenize("about 100 times"),
+                       ["about", "100", "times"])
+    }
+
+    func testDigitMappingPreservesCardinalityWithDisplayTokens() {
+        let raw = "The 5 boxing wizards"
+        XCTAssertEqual(SentenceNormalizer.displayTokens(raw).count,
+                       SentenceNormalizer.tokenize(raw).count)
+    }
+
+    func testPunctuatedDigitIsMappedAfterTrim() {
+        XCTAssertEqual(SentenceNormalizer.tokenize("I'll be 10 minutes late."),
+                       ["i'll", "be", "ten", "minutes", "late"])
     }
 }
