@@ -7,6 +7,7 @@ enum HomeRoute: Hashable {
     case review
     case summary
     case settings
+    case reading
 }
 
 struct HomeView: View {
@@ -89,6 +90,22 @@ struct HomeView: View {
                     }
                 case .settings:
                     SettingsView()
+                case .reading:
+                    ReadingFlowView(path: $path)
+                }
+            }
+            .navigationDestination(for: ReadingDestination.self) { destination in
+                switch destination {
+                case .setup(let text):
+                    ReadingSetupView(text: text) { spokenSpeaker in
+                        path.append(ReadingDestination.read(text: text, spokenSpeaker: spokenSpeaker))
+                    }
+                case .read(let text, let spokenSpeaker):
+                    ReadingView(text: text, spokenSpeaker: spokenSpeaker, playback: playback) { result in
+                        path.append(ReadingDestination.result(text: text, result: result, spokenSpeaker: spokenSpeaker))
+                    }
+                case .result(let text, let result, let spokenSpeaker):
+                    ReadingResultView(result: result, text: text, spokenSpeaker: spokenSpeaker)
                 }
             }
             .task(id: path.count) {
@@ -168,6 +185,14 @@ struct HomeView: View {
             }
             .buttonStyle(PrimaryButtonStyle())
             .accessibilityLabel(primaryCTATitle)
+
+            NavigationLink(value: HomeRoute.reading) {
+                Label("Reading mode", systemImage: "book")
+                    .frame(maxWidth: .infinity)
+            }
+            .buttonStyle(.bordered)
+            .controlSize(.large)
+            .accessibilityLabel("Reading mode")
 
             Text("\(totalSentences) sentences across \(categories) categories")
                 .font(.caption)

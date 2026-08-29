@@ -1,6 +1,7 @@
 import Testing
 @testable import SpeakEasy
 
+@MainActor
 @Suite("Advanced scoring (S4.2/S4.3)")
 struct SentenceScoringExtendedTests {
     private let service = SentenceScoringService()

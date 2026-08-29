@@ -6,17 +6,19 @@ import Testing
 struct PracticeViewModelTests {
 
     private func makeVM(
-        queue: [LearningSentence] = [.stub(id: 1, english: "I think so"),
-                                     .stub(id: 2, english: "Let me check")],
-        recognizer: FakeRecognizer = FakeRecognizer(script: .succeeds("i think so")),
+        queue: [LearningSentence]? = nil,
+        recognizer: FakeRecognizer? = nil,
         mode: PracticeMode = .repeatAfter,
         recorded: @escaping @MainActor (Int, Int) -> Void = { _, _ in }
     ) -> PracticeViewModel {
-        PracticeViewModel(queue: queue,
-                          playback: SpeechPlaybackService(),
-                          recognition: recognizer,
-                          recordAttempt: recorded,
-                          mode: mode)
+        let queue = queue ?? [.stub(id: 1, english: "I think so"),
+                              .stub(id: 2, english: "Let me check")]
+        let recognizer = recognizer ?? FakeRecognizer(script: .succeeds("i think so"))
+        return PracticeViewModel(queue: queue,
+                                 playback: SpeechPlaybackService(),
+                                 recognition: recognizer,
+                                 recordAttempt: recorded,
+                                 mode: mode)
     }
 
     @Test("Nominal cycle: ready → recording → result")
@@ -135,6 +137,7 @@ struct PracticeViewModelTests {
     }
 }
 
+@MainActor
 extension LearningSentence {
     static func stub(id: Int = 1, english: String = "hello",
                      french: String = "bonjour", difficulty: Int = 1) -> Self {

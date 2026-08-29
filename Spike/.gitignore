@@ -1,0 +1,10 @@
+# Generated sample audio (gitignored — run ./generate-sample.sh locally)
+sample.wav
+sample.aiff
+Sources/Spike/Resources/sample.wav
+
+.DS_Store
+.build/
+.swiftpm/
+*.xcodeproj/
+build/

@@ -1,6 +1,7 @@
 import XCTest
 @testable import SpeakEasy
 
+@MainActor
 final class FeedbackServiceTests: XCTestCase {
     let service = FeedbackService()
 

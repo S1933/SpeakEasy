@@ -1,0 +1,877 @@
+[
+  {
+    "id": 1,
+    "kind": "conversation",
+    "title": "The late arrival",
+    "difficulty": 1,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Sam",
+        "text": "Hey, are you still coming to the meeting this morning, or did something come up?"
+      },
+      {
+        "id": 1,
+        "speaker": "Alex",
+        "text": "I am, but I'll be about ten minutes late. My train was delayed on the way in, and I had to wait for the next one."
+      },
+      {
+        "id": 2,
+        "speaker": "Sam",
+        "text": "No problem at all. I'll let the others know so nobody waits for you to start."
+      },
+      {
+        "id": 3,
+        "speaker": "Alex",
+        "text": "Thanks, I really appreciate that. I'll join the call as soon as I get to my desk and catch up on what I missed."
+      },
+      {
+        "id": 4,
+        "speaker": "Sam",
+        "text": "Sounds good. We have coffee and pastries in the kitchen, so you won't miss much."
+      }
+    ]
+  },
+  {
+    "id": 2,
+    "kind": "story",
+    "title": "The quiet morning",
+    "difficulty": 1,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "The town woke slowly under a soft gray sky. Streetlights still glowed along the main road, and the air carried the smell of fresh bread from the bakery on the corner."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "Maria opened her window and leaned out, watching the first cars appear at the end of the street. She had lived here her whole life, and still every morning felt a little new."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "Downstairs, the kettle whistled. Her mother was already at the table, reading a newspaper and sipping tea from a chipped blue cup they refused to throw away."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "Maria sat down, and together they watched the morning settle into its familiar rhythm, quiet and warm, before the town truly opened its eyes."
+      }
+    ]
+  },
+  {
+    "id": 3,
+    "kind": "conversation",
+    "title": "The broken printer",
+    "difficulty": 2,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Nina",
+        "text": "Do you have a minute? The printer in the corner office is showing an error, and I can't clear it no matter what I try."
+      },
+      {
+        "id": 1,
+        "speaker": "Leo",
+        "text": "Let me take a look. Does it say there's a paper jam, or is it complaining about the ink cartridge?"
+      },
+      {
+        "id": 2,
+        "speaker": "Nina",
+        "text": "The screen just says the tray is open, but I've pushed it in a hundred times and it still won't recognize it."
+      },
+      {
+        "id": 3,
+        "speaker": "Leo",
+        "text": "That might be a sensor problem. They're not expensive, and we have a spare one in the supply closet."
+      },
+      {
+        "id": 4,
+        "speaker": "Nina",
+        "text": "Great, let's fix it properly. If it keeps breaking, we should consider replacing the whole machine."
+      },
+      {
+        "id": 5,
+        "speaker": "Leo",
+        "text": "Agreed. A reliable printer saves more time than we think."
+      }
+    ]
+  },
+  {
+    "id": 4,
+    "kind": "story",
+    "title": "The last train",
+    "difficulty": 2,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "The station was almost empty at that hour. A single lamp cast a pale circle on the platform, and the wind pushed an old newspaper along the tracks."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "Thomas checked his watch for the third time. The last train of the evening was due in a few minutes, and he had promised to be home before midnight."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "In the distance, a warm light appeared, growing slowly brighter as the train rounded the bend. The sound of it reached him first, a low steady hum that grew into a gentle roar."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "He picked up his bag and stepped forward, feeling the familiar excitement of travel that never quite faded, no matter how many times he made the trip."
+      }
+    ]
+  },
+  {
+    "id": 5,
+    "kind": "conversation",
+    "title": "Planning the move",
+    "difficulty": 3,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Elena",
+        "text": "We need to decide on a date for the office move, because the landlord needs an answer by the end of the week."
+      },
+      {
+        "id": 1,
+        "speaker": "Marco",
+        "text": "I think the first weekend of next month works best, as long as we reserve the truck beforehand and the weather cooperates."
+      },
+      {
+        "id": 2,
+        "speaker": "Elena",
+        "text": "Let's also think about the furniture. Some of it won't fit through the new doorways, so we might need to sell the bigger desks."
+      },
+      {
+        "id": 3,
+        "speaker": "Marco",
+        "text": "That's a good point. We could measure everything this week and list what stays."
+      },
+      {
+        "id": 4,
+        "speaker": "Elena",
+        "text": "Perfect. And we should inform the clients about the change of address in advance, so nothing gets lost."
+      },
+      {
+        "id": 5,
+        "speaker": "Marco",
+        "text": "Agreed. If we plan carefully, the whole move should take a single day with little disruption."
+      }
+    ]
+  },
+  {
+    "id": 6,
+    "kind": "conversation",
+    "title": "Coffee order",
+    "difficulty": 1,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Anna",
+        "text": "Hi there, what can I get for you this morning?"
+      },
+      {
+        "id": 1,
+        "speaker": "Ben",
+        "text": "A medium coffee with milk and one sugar, please. I am in a hurry today."
+      },
+      {
+        "id": 2,
+        "speaker": "Anna",
+        "text": "Would you like anything to eat with that? We have fresh croissants and muffins in the case."
+      },
+      {
+        "id": 3,
+        "speaker": "Ben",
+        "text": "A chocolate muffin sounds good. How much is everything together, by the way?"
+      },
+      {
+        "id": 4,
+        "speaker": "Anna",
+        "text": "Six dollars and fifty cents. I can warm the muffin for you if you want."
+      },
+      {
+        "id": 5,
+        "speaker": "Ben",
+        "text": "Yes please. I will have it here at the counter and head straight out the door."
+      }
+    ]
+  },
+  {
+    "id": 7,
+    "kind": "conversation",
+    "title": "Walking directions",
+    "difficulty": 1,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Pat",
+        "text": "Excuse me, I'm trying to find the post office on Main Street. Am I going the right way?"
+      },
+      {
+        "id": 1,
+        "speaker": "Joy",
+        "text": "You're close, but you've passed it. Turn left at the next traffic light, then walk two blocks."
+      },
+      {
+        "id": 2,
+        "speaker": "Pat",
+        "text": "Is it the brick building with the green door, or the one with the blue awning?"
+      },
+      {
+        "id": 3,
+        "speaker": "Joy",
+        "text": "The green door, on the right side. The blue awning is a cafe. You can't miss it."
+      },
+      {
+        "id": 4,
+        "speaker": "Pat",
+        "text": "Thank you so much. I would have walked past it a second time without your help."
+      },
+      {
+        "id": 5,
+        "speaker": "Joy",
+        "text": "You're welcome. Have a good day, and watch the traffic when you cross."
+      }
+    ]
+  },
+  {
+    "id": 8,
+    "kind": "conversation",
+    "title": "At the farmers market",
+    "difficulty": 1,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Mia",
+        "text": "These strawberries look wonderful. Are they from a farm nearby?"
+      },
+      {
+        "id": 1,
+        "speaker": "Tom",
+        "text": "Yes, picked yesterday morning just a few miles from here. We grow them without any pesticides."
+      },
+      {
+        "id": 2,
+        "speaker": "Mia",
+        "text": "I can really taste the difference. Do you have any honey from the same area?"
+      },
+      {
+        "id": 3,
+        "speaker": "Tom",
+        "text": "Of course. My wife keeps the hives, and the bees feed on the same wildflowers as our crops."
+      },
+      {
+        "id": 4,
+        "speaker": "Mia",
+        "text": "Perfect, I'll take a jar of honey and two boxes of strawberries, please."
+      },
+      {
+        "id": 5,
+        "speaker": "Tom",
+        "text": "Coming right up. If you bring the jars back next week, we can refill them at a discount."
+      }
+    ]
+  },
+  {
+    "id": 9,
+    "kind": "conversation",
+    "title": "Practice run",
+    "difficulty": 2,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Sara",
+        "text": "How does the slide deck look for tomorrow's client meeting? Do you think it flows well?"
+      },
+      {
+        "id": 1,
+        "speaker": "David",
+        "text": "The introduction is clear, but the section on pricing feels a little dense. Maybe split it across two slides."
+      },
+      {
+        "id": 2,
+        "speaker": "Sara",
+        "text": "Good point. I can pull the breakdown table onto its own page so people can read it without losing focus."
+      },
+      {
+        "id": 3,
+        "speaker": "David",
+        "text": "That works. Also, the conclusion could end with a single strong call to action instead of three options."
+      },
+      {
+        "id": 4,
+        "speaker": "Sara",
+        "text": "Agreed. One clear next step is more compelling than a list of possibilities at that point."
+      },
+      {
+        "id": 5,
+        "speaker": "David",
+        "text": "Let's rehearse it once after lunch, so the timing feels comfortable and nothing feels rushed."
+      }
+    ]
+  },
+  {
+    "id": 10,
+    "kind": "conversation",
+    "title": "Saturday plans",
+    "difficulty": 2,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Lara",
+        "text": "Are you doing anything fun this weekend, or are you finally going to rest at home?"
+      },
+      {
+        "id": 1,
+        "speaker": "Owen",
+        "text": "I'm meeting some friends at the lake on Saturday, and I might take my bike out on Sunday morning."
+      },
+      {
+        "id": 2,
+        "speaker": "Lara",
+        "text": "Sounds lovely. The weather is supposed to be perfect, especially on Sunday afternoon."
+      },
+      {
+        "id": 3,
+        "speaker": "Owen",
+        "text": "It has been a long week, so I really need that quiet ride. What about you?"
+      },
+      {
+        "id": 4,
+        "speaker": "Lara",
+        "text": "I plan to clean the apartment in the morning and read a book in the garden in the afternoon."
+      },
+      {
+        "id": 5,
+        "speaker": "Owen",
+        "text": "That sounds ideal. I should take a leaf out of your book and slow down a little more often."
+      }
+    ]
+  },
+  {
+    "id": 11,
+    "kind": "conversation",
+    "title": "Returning a gift",
+    "difficulty": 2,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Cara",
+        "text": "I'd like to return this sweater, if that's possible. My sister already bought me the same one."
+      },
+      {
+        "id": 1,
+        "speaker": "Iris",
+        "text": "Of course. Do you have the receipt, or was it purchased with a card we can look up?"
+      },
+      {
+        "id": 2,
+        "speaker": "Cara",
+        "text": "I paid by card. I can pull up the email confirmation on my phone if you need the order number."
+      },
+      {
+        "id": 3,
+        "speaker": "Iris",
+        "text": "That will be perfect. The return is within the thirty day window, so you will get a full refund."
+      },
+      {
+        "id": 4,
+        "speaker": "Cara",
+        "text": "Thank you. Should I expect the money back in a few days, or will it take longer?"
+      },
+      {
+        "id": 5,
+        "speaker": "Iris",
+        "text": "It usually posts to your account within two business days, and you'll get a confirmation email too."
+      }
+    ]
+  },
+  {
+    "id": 12,
+    "kind": "conversation",
+    "title": "Interview welcome",
+    "difficulty": 3,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Henry",
+        "text": "Thank you for joining us today. Please make yourself comfortable while we get the room set up."
+      },
+      {
+        "id": 1,
+        "speaker": "Iris",
+        "text": "Thank you for the invitation. I am very glad to be here and excited to learn more about the role."
+      },
+      {
+        "id": 2,
+        "speaker": "Henry",
+        "text": "Before we begin the formal part, would you like a glass of water, a coffee, or something else?"
+      },
+      {
+        "id": 3,
+        "speaker": "Iris",
+        "text": "A glass of water would be lovely, thank you. I had a long commute and I am a little parched."
+      },
+      {
+        "id": 4,
+        "speaker": "Henry",
+        "text": "Of course, please help yourself. Once we start, the conversation will focus on your background and goals."
+      },
+      {
+        "id": 5,
+        "speaker": "Iris",
+        "text": "I appreciate that. I have prepared some questions of my own that I hope we can cover at the end."
+      }
+    ]
+  },
+  {
+    "id": 13,
+    "kind": "conversation",
+    "title": "Project deadline",
+    "difficulty": 3,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Mira",
+        "text": "We need to talk about the timeline. The original delivery date is no longer realistic, in my view."
+      },
+      {
+        "id": 1,
+        "speaker": "Theo",
+        "text": "I agree. After the latest round of feedback from the client, our scope has effectively grown by twenty percent."
+      },
+      {
+        "id": 2,
+        "speaker": "Mira",
+        "text": "Should we ask for an extension, or trim some features and ship a smaller version on time?"
+      },
+      {
+        "id": 3,
+        "speaker": "Theo",
+        "text": "I think we should propose two options to the client and let them choose based on their own priorities."
+      },
+      {
+        "id": 4,
+        "speaker": "Mira",
+        "text": "That sounds reasonable. We can put together a short document outlining both paths by tomorrow morning."
+      },
+      {
+        "id": 5,
+        "speaker": "Theo",
+        "text": "Perfect. I'll draft the trade-offs and you can review the budget impact, then we present it together."
+      }
+    ]
+  },
+  {
+    "id": 14,
+    "kind": "conversation",
+    "title": "Contract terms",
+    "difficulty": 4,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Counsel",
+        "text": "Before we sign, I want to revisit the termination clause. The current wording leaves too much ambiguity."
+      },
+      {
+        "id": 1,
+        "speaker": "Client",
+        "text": "Specifically, which scenario concerns you? The notice period, or the conditions that trigger it?"
+      },
+      {
+        "id": 2,
+        "speaker": "Counsel",
+        "text": "Both. If either party can end the agreement without cause after a single quarter, the commitment is fragile."
+      },
+      {
+        "id": 3,
+        "speaker": "Client",
+        "text": "We can extend the minimum notice to two quarters, and require a documented reason for early termination."
+      },
+      {
+        "id": 4,
+        "speaker": "Counsel",
+        "text": "Documented is vague. We should enumerate the accepted reasons explicitly, with a clear cure period."
+      },
+      {
+        "id": 5,
+        "speaker": "Client",
+        "text": "Agreed. Let's draft an enumerated list and reconvene on Friday with a redlined version for both sides."
+      }
+    ]
+  },
+  {
+    "id": 15,
+    "kind": "conversation",
+    "title": "Clinic visit",
+    "difficulty": 4,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": "Doctor",
+        "text": "How have you been feeling since your last appointment, and have you noticed any new symptoms?"
+      },
+      {
+        "id": 1,
+        "speaker": "Patient",
+        "text": "Generally better, but I have had a few episodes of dizziness, mostly in the late afternoon."
+      },
+      {
+        "id": 2,
+        "speaker": "Doctor",
+        "text": "Is the dizziness accompanied by any other sensations, such as nausea or a ringing in your ears?"
+      },
+      {
+        "id": 3,
+        "speaker": "Patient",
+        "text": "Sometimes a faint ringing, but no nausea. The episodes last only a few seconds and resolve on their own."
+      },
+      {
+        "id": 4,
+        "speaker": "Doctor",
+        "text": "Likely benign, but I would like to run a quick screening to rule out anything more serious."
+      },
+      {
+        "id": 5,
+        "speaker": "Patient",
+        "text": "Of course. If you think it is worthwhile, I would rather know now than worry about it for weeks."
+      }
+    ]
+  },
+  {
+    "id": 16,
+    "kind": "story",
+    "title": "The lost kitten",
+    "difficulty": 1,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "On Saturday morning, Lily heard a tiny sound outside her window. She looked down and saw a small gray kitten sitting alone by the garden wall."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "It looked hungry and a little scared, so Lily ran downstairs and asked her mother for a small bowl of milk."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "When she brought it outside, the kitten sniffed the bowl and started drinking immediately, while Lily watched with delight."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "After a while, the kitten followed her into the garden, and by lunchtime it had fallen asleep on a warm patch of stone."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "Lily named it Pip, and from that day on, Pip was part of every afternoon adventure in the garden."
+      }
+    ]
+  },
+  {
+    "id": 17,
+    "kind": "story",
+    "title": "First day at school",
+    "difficulty": 1,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "The school gates looked taller than they had in summer. Sam stood beside his mother, holding her hand tightly."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "Other children walked past, some laughing, some looking as uncertain as he felt. The bell rang, and everyone moved forward."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "Inside, the classroom smelled of fresh paint and new books. The teacher smiled and asked his name in a gentle voice."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "Sam sat down at a small desk near the window, and a boy in the next seat offered him a colored pencil without a word."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "By the end of the morning, the school did not feel quite so tall, and Sam was already thinking about tomorrow."
+      }
+    ]
+  },
+  {
+    "id": 18,
+    "kind": "story",
+    "title": "A rainy kitchen",
+    "difficulty": 1,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "Rain tapped against the kitchen window while Anna pulled a mixing bowl from the cupboard. It was a good day to bake."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "She measured flour carefully, cracked two eggs into a small cup, and melted a knob of butter in a saucepan."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "The kitchen filled with a warm, sweet smell as the batter came together. Anna hummed softly while she worked."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "When the cake came out of the oven, golden and firm, she set it on the wooden table to cool beside the window."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "She cut a thick slice, poured a cup of tea, and watched the rain while the afternoon drifted gently past."
+      }
+    ]
+  },
+  {
+    "id": 19,
+    "kind": "story",
+    "title": "Lost in the woods",
+    "difficulty": 2,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "The path had seemed clear an hour ago, but now every tree looked the same. Hugo stopped and tried to remember."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "He had followed the trail markers, yet somehow the small wooden signs had stopped appearing between the pines."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "Instead of pushing deeper, he sat on a mossy rock and listened. Somewhere below, he heard the faint sound of water."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "He walked slowly toward the sound, careful not to slip on the wet ground, and soon a small stream appeared through the trees."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "Following the water downstream, he reached a wooden bridge he recognized, and the village came back into view by dusk."
+      }
+    ]
+  },
+  {
+    "id": 20,
+    "kind": "story",
+    "title": "A letter in the attic",
+    "difficulty": 2,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "While cleaning the attic, Nora found a yellowed envelope tucked between two old photo albums. The ink had faded, but the name on the front was her grandmother's."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "Inside, a single page described a summer in the south of France, a village fair, and a young man who had never come home."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "Nora had heard hints of this story as a child, but never in so many words. The handwriting was firm and unhurried, almost peaceful."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "She sat on the dusty floor for a long time, holding the letter, before carefully placing it back in its envelope."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "Later that evening, she called her mother and asked, very gently, if there was more to the story than she had been told."
+      }
+    ]
+  },
+  {
+    "id": 21,
+    "kind": "story",
+    "title": "The lighthouse keeper",
+    "difficulty": 2,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "For forty years, Owen had tended the small lighthouse on the northern headland. He knew every stone of its walls."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "Automation had come slowly, then all at once, and one autumn afternoon the ministry informed him that his post was no longer needed."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "He did not argue. He simply continued his rounds until his last evening, locking the door behind him as he always had."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "On his final walk down the cliff path, the beam came on behind him, steady and indifferent to his absence."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "He paused, looked back once, and walked home beneath a sky the lighthouse would continue to sweep long after him."
+      }
+    ]
+  },
+  {
+    "id": 22,
+    "kind": "story",
+    "title": "The conference booth",
+    "difficulty": 3,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "By midday, the convention hall was deafening. Clara adjusted her badge and stepped up to the small podium behind the booth."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "A delegate from a delegation she did not recognize approached and began speaking in rapid, idiomatic French about a contested paragraph."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "She listened for the rhythm of the argument rather than the exact words, then offered a calmer restatement in careful, neutral terms."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "The delegate paused, considered, and nodded slowly. They spent the next twenty minutes untangling a misunderstanding that could have ended the entire session."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "When Clara finally sat down for water, her colleague leaned over and said the floor manager had asked for her by name from across the hall."
+      }
+    ]
+  },
+  {
+    "id": 23,
+    "kind": "story",
+    "title": "The chef's last menu",
+    "difficulty": 3,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "After fifty years behind the same stove, Henri decided his final menu would be the simplest he had ever written."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "Four courses, each a memory: his mother's leek soup, a roast chicken from his first apprenticeship, the stew he cooked the night he met his wife, and a pear in wine."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "He refused any help, even when his hands shook. The dining room was full of familiar faces and quiet conversation."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "When the last plate went out, he stood in the doorway and watched his guests eat in a silence deeper than any applause."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "He locked the kitchen for the last time that night, turned off the lights, and left the key under the mat, as he had promised himself."
+      }
+    ]
+  },
+  {
+    "id": 24,
+    "kind": "story",
+    "title": "The midnight platform",
+    "difficulty": 3,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "The last train of the night pulled in without announcement, as if it had always been there and simply chosen to be seen."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "An elderly man with a battered leather case boarded the rear car. The conductor greeted him by name, without surprise."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "They traveled together through sleeping towns, the older man watching the dark windows as the train rocked gently along."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "Near dawn, the train slowed at a station the timetable no longer listed, and the man stepped off onto a silent platform."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "The conductor watched him walk away, raising one hand in a gesture that might have been a wave, or a farewell, or a quiet blessing."
+      }
+    ]
+  },
+  {
+    "id": 25,
+    "kind": "story",
+    "title": "An evening in the observatory",
+    "difficulty": 4,
+    "lines": [
+      {
+        "id": 0,
+        "speaker": null,
+        "text": "Late in her career, Dr. Elena Vargas returned to the mountain observatory where she had first learned to read the sky."
+      },
+      {
+        "id": 1,
+        "speaker": null,
+        "text": "The building was much the same, only smaller than memory. A junior astronomer gave her a tour with quiet, undemonstrative pride."
+      },
+      {
+        "id": 2,
+        "speaker": null,
+        "text": "She stood in the dome, looking through the old eyepiece at a faint companion star that had defined her doctoral thesis forty years earlier."
+      },
+      {
+        "id": 3,
+        "speaker": null,
+        "text": "The instrument, like her, had been superseded by larger machines, yet it still showed the same point of light with patient clarity."
+      },
+      {
+        "id": 4,
+        "speaker": null,
+        "text": "When she stepped outside, the stars were still there, and the wind carried the same dry scent of cold stone and pine she remembered."
+      }
+    ]
+  }
+]
